@@ -1,0 +1,11 @@
+---
+- name: Configure Firewall on MikroTik RouterOS
+  hosts: routers
+  gather_facts: no
+  tasks:
+    - name: Allow HTTP and HTTPS traffic
+      community.routeros.command:
+        commands:
+          - /ip firewall filter add chain=input protocol=tcp dst-port=80 action=accept
+          - /ip firewall filter add chain=input protocol=tcp dst-port=443 action=accept
+          - /ip firewall filter add chain=input action=drop

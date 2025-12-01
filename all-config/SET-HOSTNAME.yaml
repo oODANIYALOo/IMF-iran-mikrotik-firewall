@@ -1,0 +1,9 @@
+---
+- name: Configure NTP on MikroTik RouterOS
+  hosts: mikrotik
+  gather_facts: no
+  tasks:
+    - name: Set NTP Server
+      community.routeros.command:
+        commands:
+          - /system ntp client set enabled=yes primary-ntp=192.168.1.100

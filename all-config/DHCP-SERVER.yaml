@@ -1,0 +1,16 @@
+---
+- name: Configure DHCP on MikroTik RouterOS
+  hosts: mikrotik
+  gather_facts: no
+  tasks:
+    - name: Add IP Pool
+      community.routeros.command:
+        commands:
+          - /ip pool add name=dhcp_pool ranges=192.168.88.2-192.168.88.100
+
+    - name: Configure DHCP Server
+      community.routeros.command:
+        commands:
+          - /ip dhcp-server add name=dhcp1 interface=ether3 address-pool=dhcp_pool disabled=no
+          - /ip dhcp-server network add address=192.168.88.0/24 gateway=192.168.88.1
+

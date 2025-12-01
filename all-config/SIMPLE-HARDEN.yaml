@@ -1,0 +1,16 @@
+---
+- name: Basic Hardening for MikroTik RouterOS
+  hosts: routers
+  gather_facts: no
+  tasks:
+    - name: Disable unused services
+      community.routeros.command:
+        commands:
+          - /ip service disable telnet
+          - /ip service disable ftp
+          - /ip service disable www
+
+    - name: Enable SSH
+      community.routeros.command:
+        commands:
+          - /ip service enable ssh

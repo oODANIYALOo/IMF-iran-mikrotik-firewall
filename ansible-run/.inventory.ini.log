@@ -1,0 +1,72 @@
+Sun Jun  1 04:02:40 PM +0330 2025
+[mikrotik]
+mt_router ansible_host=IIP
+
+[mikrotik:vars]
+ansible_connection=ansible.netcommon.network_cli
+ansible_network_os=community.routeros.routeros
+ansible_user=UUSER
+ansible_password=PPASSWORD
+ansible_become=yes
+ansible_become_method=enable
+ansible_ssh_common_args='-o StrictHostKeyChecking=no -o HostKeyAlgorithms=+ssh-rsa'
+Thu Jun  5 12:17:06 PM +0330 2025
+[mikrotik]
+mt_router ansible_host=192.168.56.116
+
+[mikrotik:vars]
+ansible_connection=ansible.netcommon.network_cli
+ansible_network_os=community.routeros.routeros
+ansible_user=admin
+ansible_password=1
+ansible_become=yes
+ansible_become_method=enable
+ansible_ssh_common_args='-o StrictHostKeyChecking=no -o HostKeyAlgorithms=+ssh-rsa'
+Thu Jun  5 06:48:46 PM +0330 2025
+[mikrotik]
+mt_router ansible_host=192.168.56.116
+
+[mikrotik:vars]
+ansible_connection=ansible.netcommon.network_cli
+ansible_network_os=community.routeros.routeros
+ansible_user=admin
+ansible_password=1
+ansible_become=yes
+ansible_become_method=enable
+ansible_ssh_common_args='-o StrictHostKeyChecking=no -o HostKeyAlgorithms=+ssh-rsa'
+Sun Nov 16 02:18:28 PM UTC 2025
+[mikrotik]
+mt_router ansible_host=192.168.56.116
+
+[mikrotik:vars]
+ansible_connection=ansible.netcommon.network_cli
+ansible_network_os=community.routeros.routeros
+ansible_user=admin
+ansible_password=1
+ansible_become=yes
+ansible_become_method=enable
+ansible_ssh_common_args='-o StrictHostKeyChecking=no -o HostKeyAlgorithms=+ssh-rsa'
+Sun Nov 16 02:18:43 PM UTC 2025
+[mikrotik]
+mt_router ansible_host=192.168.1.1
+
+[mikrotik:vars]
+ansible_connection=ansible.netcommon.network_cli
+ansible_network_os=community.routeros.routeros
+ansible_user=admin
+ansible_password=admin
+ansible_become=yes
+ansible_become_method=enable
+ansible_ssh_common_args='-o StrictHostKeyChecking=no -o HostKeyAlgorithms=+ssh-rsa'
+Sun Nov 16 02:25:12 PM UTC 2025
+[mikrotik]
+mt_router ansible_host=192.256.1.1
+
+[mikrotik:vars]
+ansible_connection=ansible.netcommon.network_cli
+ansible_network_os=community.routeros.routeros
+ansible_user=admin
+ansible_password=admin
+ansible_become=yes
+ansible_become_method=enable
+ansible_ssh_common_args='-o StrictHostKeyChecking=no -o HostKeyAlgorithms=+ssh-rsa'

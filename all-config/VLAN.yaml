@@ -1,0 +1,17 @@
+---
+- name: Configure VLAN on Cisco Router
+  hosts: routers
+  gather_facts: no
+  tasks:
+    - name: Create VLAN 10
+      cisco.ios.ios_config:
+        lines:
+          - vlan 10
+          - name IT_VLAN
+
+    - name: Assign interface to VLAN 10
+      cisco.ios.ios_config:
+        lines:
+          - interface GigabitEthernet1/0/1
+          - switchport mode access
+          - switchport access vlan 10

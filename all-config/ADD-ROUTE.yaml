@@ -1,0 +1,9 @@
+---
+- name: Configure Static Route on Cisco Router
+  hosts: routers
+  gather_facts: no
+  tasks:
+    - name: Add static route
+      cisco.ios.ios_config:
+        lines:
+          - ip route 192.168.20.0 255.255.255.0 192.168.10.2
