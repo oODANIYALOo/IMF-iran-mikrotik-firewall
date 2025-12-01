@@ -70,3 +70,15 @@ ansible_password=admin
 ansible_become=yes
 ansible_become_method=enable
 ansible_ssh_common_args='-o StrictHostKeyChecking=no -o HostKeyAlgorithms=+ssh-rsa'
+Mon Dec  1 05:29:50 AM UTC 2025
+[mikrotik]
+mt_router ansible_host=172.22.0.2
+
+[mikrotik:vars]
+ansible_connection=ansible.netcommon.network_cli
+ansible_network_os=community.routeros.routeros
+ansible_user=admin
+ansible_password=dani
+ansible_become=yes
+ansible_become_method=enable
+ansible_ssh_common_args='-o StrictHostKeyChecking=no -o HostKeyAlgorithms=+ssh-rsa'
