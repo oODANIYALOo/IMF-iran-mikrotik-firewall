@@ -11,18 +11,16 @@ RUN apk update && apk add --no-cache \
     musl-dev \
     libffi-dev \
     openssl-dev \
-    make dialog
+    make dialog bash libssh-dev
 
-RUN python3 -m pip install --break-system-packages --user pipx
 ENV PATH="/root/.local/bin:${PATH}"
-RUN python3 -m pipx ensurepath
+RUN python3 -m pip install --break-system-packages --user paramiko ansible-pylibssh ansible-core==2.20.0
 
-RUN pipx install ansible-core
 
 RUN ansible-galaxy collection install ansible.netcommon ansible.posix ansible.utils community.routeros
-RUN apk add bash libssh-dev 
-RUN pip install --break-system-packages paramiko ansible-pylibssh
+
 COPY ansible.cfg /etc/ansible/
+
 WORKDIR /app
 COPY . .
 
