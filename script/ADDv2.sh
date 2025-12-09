@@ -31,6 +31,16 @@ add_host() {
         echo "Error: add command requires 3 arguments: ip user pass"
         echo "Usage: $0 add <ip> <user> <pass>"
         exit 1
+    elif ! [[ "$1" =~ ^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$ ]]; then
+        echo "Error: ip incorrect"
+        echo "example: 10.20.30.1, 192.168.1.100"
+        exit 1
+  elif ! [[ "$2" =~ ^[a-z,A-Z,0-9]{3,32}$ ]]; then
+        echo "Error: user incorrect"
+        exit 1
+  elif ! [[ $3 =~ ^[a-z,A-Z,0-9]{1,50}$ ]]; then
+        echo "Error: pass incorrect"
+        exit 1
     fi
     
     local ip="$1"
