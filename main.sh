@@ -2,12 +2,34 @@
 
 
 MK_ADD() {
-  ADRESS=$(dialog --form "$MSG" 10 50 4 \
-    "IP: " 1 1 "$IP" 1 12 20 0 \
-    "USER: " 2 1 "$USR" 2 12 20 0 \
-    "PASSWORD: " 3 1 "$PASSWORD" 3 12 20 0 3>&1 1>&2 2>&3)
-  CHECK
+	ADRESS=$(dialog --form "Enter your ssh mikrotik info" 10 50 4 \
+		"IP: " 1 1 "" 1 12 20 0 \
+		"USER: " 2 1 "" 2 12 20 0 \
+		"PASSWORD: " 3 1 "" 3 12 20 0 3>&1 1>&2 2>&3)
+	
+	IP=$(echo $ADRESS | cut -d " " -f1)
+	USR=$(echo $ADRESS | cut -d " " -f2)
+	PASSWORD=$(echo $ADRESS | cut -d " " -f3)
+
+	OUTPUT=$(./script/ADDv2.sh add $IP $USR $PASSWORD)
+	dialog --title "massage" --msgbox "$OUTPUT" 6 35
 }
+
+MK_DEL() {
+	ADRESS=$(dialog --form "enter ip or number of mikrotik for delete" 10 60 4 \
+		"IP or NUMBER: " 1 1 "" 1 20 20 0 3>&1 1>&2 2>&3)
+	
+	OUTPUT=$(./script/ADDv2.sh del $ADRESS)
+	dialog --title "massage" --msgbox "$OUTPUT" 6 35
+	
+}
+
+MK_SHOW() {
+	OUTPUT=$(./script/ADDv2.sh show)
+	dialog --title "massage" --msgbox "$OUTPUT" 15 50	
+}
+
+:'
 CHECK() {
   TEMP=$(echo $ADRESS | grep -o " " | wc -l)
   if [[ $TEMP != 2 ]]; then
@@ -30,7 +52,7 @@ CHECK() {
     MK_ADD
   fi
 }
-
+':
 ADD() {
 	MSG="Enter Mikrotik Info"
 	while true; do
@@ -49,14 +71,17 @@ ADD() {
   		esac
 	done
 
-
-  ENTRY
-
   #dialog --title "massage" --msgbox "add successful :)" 6 35
 }
 
 CHECK() {
-  ./script/CHECK.sh
+	if ANSWER=$(ansible allmikrotik -m community.routeros.command \
+	       	-a '{"commands": ["/system resource print"]}' -i inventory.ini); then
+  		dialog --title "output" --msgbox "$(printf "%s\n" "$ANSWER" | grep -e version -e memory -e cpu -e platform |\
+		       	tail -8 | cut -d "\"" -f 2)" 12 45
+	else
+		dialog --title "error" --msgbox "host is down please check :(" 5 35
+	fi
 }
 
 CONFIG() {
