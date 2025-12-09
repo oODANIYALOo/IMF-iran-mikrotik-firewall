@@ -28,3 +28,6 @@ WORKDIR /app
 COPY . .
 
 CMD ["/bin/bash"]
+# for web core we need this
+# pip install -r web/requerment.txt
+# python web/manage.py runserver
