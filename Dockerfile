@@ -1,5 +1,6 @@
 FROM alpine:latest
 
+# install dependencys package in image
 RUN apk update && apk add --no-cache \
     python3 \
     py3-pip \
@@ -13,12 +14,14 @@ RUN apk update && apk add --no-cache \
     openssl-dev \
     make dialog bash libssh-dev
 
+# add path for ansible and ...
 ENV PATH="/root/.local/bin:${PATH}"
+
+# install ansible and dependencys
 RUN python3 -m pip install --break-system-packages --user paramiko ansible-pylibssh ansible-core==2.20.0
-
-
+# install ansible collection requirements
 RUN ansible-galaxy collection install ansible.netcommon ansible.posix ansible.utils community.routeros
-
+# for config ansible
 COPY ansible.cfg /etc/ansible/
 
 WORKDIR /app
