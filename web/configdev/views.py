@@ -3,13 +3,13 @@ from django.shortcuts import render, redirect
 from django.views import View
 
 # address of dani script add
-SCRIPT_IMF = "imf-inventory"
+IMF_INVENTORY = "imf-inventory"
 
 
 class DeviceView(View):
 # this line is our script runer
     def run_imf(self, command):
-        cmd = f"{SCRIPT_IMF} {command}"
+        cmd = f"{IMF_INVENTORY} {command}"
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
         return result.stdout
 
