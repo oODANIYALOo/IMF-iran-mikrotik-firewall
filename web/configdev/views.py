@@ -6,7 +6,11 @@ from django.views import View
 IMF_INVENTORY = "imf-inventory"
 
 
-class DeviceView(View):
+class IndexView(View):
+    def get(self, request):
+        return render(request, "index.html")
+
+class AddAndDeleteMikrotickViewe(View):
 # this line is our script runer
     def run_imf(self, command):
         cmd = f"{IMF_INVENTORY} {command}"
@@ -36,3 +40,13 @@ class DeviceView(View):
             self.run_imf(f"del {target}")
 
         return redirect("device-page")
+
+
+class CheckMikrotick(View):
+    def get(self, request):
+        pass
+
+
+class ConfigMikrotick(View):
+    def get(self, request):
+        pass
