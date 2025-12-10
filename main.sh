@@ -115,7 +115,7 @@ WEB() {
 while true; do
 
   OP=$(dialog --title "Welcome to IMF" --menu "Select Option" 15 30 5 \
-    1 "ADD & DEL Mikrotik" \
+    1 "Manange Mikrotik" \
     2 "Check Mikrotik" \
     3 "Config Mikrotik" \
     4 "Run web interface" \
