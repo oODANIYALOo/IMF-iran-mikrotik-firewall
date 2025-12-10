@@ -1,5 +1,6 @@
 from django.urls import path
-from configdev import views
+from configdev.views import DeviceView
+
 urlpatterns = [
-path('',views.Index.as_view()),
+    path("", DeviceView.as_view(), name="device-page"),
 ]

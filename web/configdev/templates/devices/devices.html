@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Device Manager</title>
+</head>
+<body>
+
+<h2>Device List</h2>
+
+<table border="1" cellpadding="6">
+    <tr>
+        <th>#</th>
+        <th>Device Entry</th>
+        <th>Action</th>
+    </tr>
+
+    {% for line in devices %}
+    <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ line }}</td>
+        <td>
+            <form method="post" style="display:inline">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="target" value="{{ line }}">
+                <button type="submit">Delete</button>
+            </form>
+        </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="3">No devices found.</td></tr>
+    {% endfor %}
+</table>
+
+<hr>
+
+<h3>Add Device</h3>
+
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="add">
+
+    <label>IP:</label>
+    <input type="text" name="ip" required>
+
+    <label>User:</label>
+    <input type="text" name="user" required>
+
+    <label>Password:</label>
+    <input type="text" name="password" required>
+
+    <button type="submit">Add</button>
+</form>
+
+</body>
+</html>
