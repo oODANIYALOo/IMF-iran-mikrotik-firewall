@@ -4,7 +4,7 @@ from django.views import View
 
 # address of dani script add
 IMF_INVENTORY = "imf-inventory"
-
+INVENTORY_PATH = "/app/inventory.ini"
 
 class IndexView(View):
     def get(self, request):
@@ -42,7 +42,15 @@ class AddAndDeleteMikrotickViewe(View):
 
 class CheckMikrotick(View):
     def get(self, request):
-        pass
+        if request.method == 'POST':
+            number = request.POST.get('number')
+
+        result = subprocess.run("ansible allmikrotik -m community.routeros.command \
+	       	-a \'{\"commands\": [\"/system resource print\"]}\' -i /app/inventory.ini \
+            | grep -e version -e memory -e cpu -e platform | \
+		       	tail -8 | cut -d \'\"\' -f 2", shell=True, capture_output=True, text=True)
+
+        return render(request, 'check.html', result.stdout)
 
 
 class ConfigMikrotick(View):
