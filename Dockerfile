@@ -26,7 +26,8 @@ COPY web/requerment.txt /app/web/requerment.txt
 RUN pip install --break-system-packages -r /app/web/requerment.txt
 EXPOSE 8000
 ENV PATH="/app/script/:${PATH}"
-RUN apk add --no-cache tzdata
+RUN apk add --no-cache tzdata 
+RUN ln -s /usr/share/zoneinfo/Iran /etc/localtime
 
 # for config ansible
 COPY ansible.cfg /etc/ansible/
