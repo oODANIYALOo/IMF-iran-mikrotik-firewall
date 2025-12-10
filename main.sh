@@ -12,7 +12,7 @@ MK_ADD() {
 	PASSWORD=$(echo $ADRESS | cut -d " " -f3)
 
 	OUTPUT=$(imf-inventory add $IP $USR $PASSWORD)
-	dialog --title "massage" --msgbox "$OUTPUT" 6 35
+	dialog --title "=== Mikrotik Inventory ===" --msgbox "$OUTPUT" 6 35
 }
 
 MK_DEL() {
