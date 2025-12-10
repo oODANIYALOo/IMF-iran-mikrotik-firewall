@@ -21,8 +21,6 @@ class AddAndDeleteMikrotickViewe(View):
         # Show device list
         output = self.run_imf("show")
         devices = output.splitlines()
-        if len(devices) > 0:
-            devices.pop(0)
         return render(request, "devices/devices.html", {"devices": devices})
 # and this is control sender
     def post(self, request):
