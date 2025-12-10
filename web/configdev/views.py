@@ -19,7 +19,7 @@ class AddAndDeleteMikrotickViewe(View):
 
     def get(self, request):
         # Show device list
-        output = self.run_imf("show")
+        output = self.run_imf("show | grep mikrotik")
         devices = output.splitlines()
         return render(request, "devices/devices.html", {"devices": devices})
 # and this is control sender
