@@ -35,5 +35,5 @@ COPY ansible.cfg /etc/ansible/
 WORKDIR /app
 COPY . .
 
-#CMD ["/bin/bash", "./main.sh"]
-CMD ["/bin/bash"]
+CMD ["/bin/bash", "./main.sh"]
+#CMD ["/bin/bash"]

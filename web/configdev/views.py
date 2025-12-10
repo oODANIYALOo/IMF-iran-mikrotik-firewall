@@ -37,7 +37,7 @@ class AddAndDeleteMikrotickViewe(View):
             target = request.POST.get("target")
             self.run_imf(f"del {target}")
 
-        return redirect("device-page")
+        return redirect("add_dell")
 
 
 class CheckMikrotick(View):

@@ -36,22 +36,28 @@
     </tr>
 
     {% for line in devices %}
-        {% if line.strip and "No hosts found" not in line and "Usage:" not in line %}
+        {% if line and "No hosts found" not in line and "Usage:" not in line %}
+
         <tr>
-            <td>{{ forloop.counter }}</td>
+            <!-- Extract ONLY the first character, e.g. "1) mikrotik1" → "1" -->
+            <td>{{ line|slice:":1" }}</td>
+
             <td>{{ line }}</td>
+
             <td>
                 <form method="post" style="display:inline">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="target" value="{{ line }}">
+                    <!-- Send the delete index -->
+                    <input type="hidden" name="target" value="{{ line|slice:':1' }}">
                     <button type="submit">Delete</button>
                 </form>
             </td>
         </tr>
+
         {% endif %}
     {% empty %}
-    <tr><td colspan="3">No devices found.</td></tr>
+        <tr><td colspan="3">No devices found.</td></tr>
     {% endfor %}
 </table>
 
