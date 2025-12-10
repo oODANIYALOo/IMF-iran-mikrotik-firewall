@@ -2,12 +2,33 @@
 <html>
 <head>
     <title>Device Manager</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 70%;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #eee;
+        }
+        form {
+            margin: 0;
+        }
+        input, button {
+            padding: 4px;
+            margin: 2px 0;
+        }
+    </style>
 </head>
 <body>
 
 <h2>Device List</h2>
 
-<table border="1" cellpadding="6">
+<table>
     <tr>
         <th>#</th>
         <th>Device Entry</th>
@@ -15,18 +36,20 @@
     </tr>
 
     {% for line in devices %}
-    <tr>
-        <td>{{ forloop.counter }}</td>
-        <td>{{ line }}</td>
-        <td>
-            <form method="post" style="display:inline">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="delete">
-                <input type="hidden" name="target" value="{{ line }}">
-                <button type="submit">Delete</button>
-            </form>
-        </td>
-    </tr>
+        {% if line.strip and "No hosts found" not in line and "Usage:" not in line %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ line }}</td>
+            <td>
+                <form method="post" style="display:inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="target" value="{{ line }}">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endif %}
     {% empty %}
     <tr><td colspan="3">No devices found.</td></tr>
     {% endfor %}

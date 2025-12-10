@@ -3,20 +3,22 @@ from django.shortcuts import render, redirect
 from django.views import View
 
 # address of dani script add
-SCRIPT_PATH_ADD = "../script/ADDv2.sh"
+SCRIPT_IMF = "imf-inventory"
 
 
 class DeviceView(View):
 # this line is our script runer
-    def run_script_add(self, command):
-        cmd = f"{SCRIPT_PATH_ADD} {command}"
+    def run_imf(self, command):
+        cmd = f"{SCRIPT_IMF} {command}"
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
         return result.stdout
 
     def get(self, request):
         # Show device list
-        output = self.run_script_add("show")
+        output = self.run_imf("show")
         devices = output.splitlines()
+        if len(devices) > 0:
+            devices.pop(0)
         return render(request, "devices/devices.html", {"devices": devices})
 # and this is control sender
     def post(self, request):
@@ -26,11 +28,11 @@ class DeviceView(View):
             ip = request.POST.get("ip")
             user = request.POST.get("user")
             password = request.POST.get("password")
-            self.run_script_add(f"add {ip} {user} {password}")
+            self.run_imf(f"add {ip} {user} {password}")
 # and this delete dev
 
         elif action == "delete":
             target = request.POST.get("target")
-            self.run_script_add(f"del {target}")
+            self.run_imf(f"del {target}")
 
         return redirect("device-page")
