@@ -11,7 +11,7 @@ MK_ADD() {
 	USR=$(echo $ADRESS | cut -d " " -f2)
 	PASSWORD=$(echo $ADRESS | cut -d " " -f3)
 
-	OUTPUT=$(./script/ADDv2.sh add $IP $USR $PASSWORD)
+	OUTPUT=$(imf-inventory add $IP $USR $PASSWORD)
 	dialog --title "massage" --msgbox "$OUTPUT" 6 35
 }
 
@@ -19,13 +19,13 @@ MK_DEL() {
 	ADRESS=$(dialog --form "enter ip or number of mikrotik for delete" 10 60 4 \
 		"IP or NUMBER: " 1 1 "" 1 20 20 0 3>&1 1>&2 2>&3)
 	
-	OUTPUT=$(./script/ADDv2.sh del $ADRESS)
+	OUTPUT=$(imf-inventory del $ADRESS)
 	dialog --title "massage" --msgbox "$OUTPUT" 6 35
 	
 }
 
 MK_SHOW() {
-	OUTPUT=$(./script/ADDv2.sh show)
+	OUTPUT=$(imf-inventory show)
 	dialog --title "massage" --msgbox "$OUTPUT" 15 50	
 }
 
