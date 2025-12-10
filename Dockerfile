@@ -21,13 +21,15 @@ ENV PATH="/root/.local/bin:${PATH}"
 RUN python3 -m pip install --break-system-packages --user paramiko ansible-pylibssh ansible-core==2.20.0
 # install ansible collection requirements
 RUN ansible-galaxy collection install ansible.netcommon ansible.posix ansible.utils community.routeros
+# install requerment for web and django
+COPY web/requerment.txt /app/web/requerment.txt
+RUN pip install --break-system-packages -r /app/web/requerment.txt
+EXPOSE 8000
+
 # for config ansible
 COPY ansible.cfg /etc/ansible/
 
 WORKDIR /app
 COPY . .
 
-CMD ["/bin/bash"]
-# for web core we need this
-# pip install -r web/requerment.txt
-# python web/manage.py runserver
+CMD ["/bin/bash", "./main.sh"]

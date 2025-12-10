@@ -88,18 +88,44 @@ CONFIG() {
   source ./script/CONFIG.sh
 }
 
+WEB() {
+	SEC=4
+	(
+		for i in {1..100}; do
+			echo $i
+			sleep $(echo "scale=2; $SEC/100" | bc)
+  		done
+	) | dialog --gauge "loading run web server..." 10 70 0 &
+	DIALOG_PID=$!
+	
+	date >> web/runserver.log
+	python web/manage.py runserver 2>> web/runserver.log 1>&2 &
+	WEB_EXIT=$?
+
+	sleep 4 && kill $DIALOG_PID 2>/dev/null
+	wait $DIALOG_PID 2>/dev/null
+
+	if [ $WEB_EXIT -eq 0 ]; then
+		 dialog --title "successful Run" --msgbox "Web interface successful run in port 8000" 5 50 
+	else
+		 dialog --title "ERROR" --msgbox "plase check web/runserver.log" 5 50
+	fi
+}
+
 while true; do
 
-  OP=$(dialog --title "Welcome to IMF" --menu "Select Option" 15 30 4 \
+  OP=$(dialog --title "Welcome to IMF" --menu "Select Option" 15 30 5 \
     1 "ADD & DEL Mikrotik" \
     2 "Check Mikrotik" \
     3 "Config Mikrotik" \
-    4 "Exit" 3>&1 1>&2 2>&3)
+    4 "Run web interface" \
+    5 "Exit" 3>&1 1>&2 2>&3)
 
   case $OP in
   1) ADD ;;
   2) CHECK ;;
   3) CONFIG ;;
-  4) exit 0 ;;
+  4) WEB;;
+  5) exit 0 ;;
   esac
 done
