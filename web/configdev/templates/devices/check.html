@@ -1,11 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>MikroTik Check Result</title>
-</head>
-<body>
+{% extends 'parent/base.html' %}
 
+{% block title %}MikroTik Check Result{% endblock %}
+
+{% block content %}
 <h1>MikroTik Device Check</h1>
 
 {% if output %}
@@ -14,6 +11,4 @@
 {% else %}
     <p>No data received.</p>
 {% endif %}
-
-</body>
-</html>
+{% endblock %}

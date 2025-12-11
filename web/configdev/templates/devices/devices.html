@@ -1,30 +1,30 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Device Manager</title>
-    <style>
-        table {
-            border-collapse: collapse;
-            width: 70%;
-        }
-        th, td {
-            border: 1px solid #333;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #eee;
-        }
-        form {
-            margin: 0;
-        }
-        input, button {
-            padding: 4px;
-            margin: 2px 0;
-        }
-    </style>
-</head>
-<body>
+{% extends 'parent/base.html' %}
+
+{% block title %}Device Manager{% endblock %}
+
+{% block content %}
+
+<style>
+    table {
+        border-collapse: collapse;
+        width: 70%;
+    }
+    th, td {
+        border: 1px solid #333;
+        padding: 8px;
+        text-align: left;
+    }
+    th {
+        background-color: #eee;
+    }
+    form {
+        margin: 0;
+    }
+    input, button {
+        padding: 4px;
+        margin: 2px 0;
+    }
+</style>
 
 <h2>Device List</h2>
 
@@ -37,9 +37,8 @@
 
     {% for line in devices %}
         {% if line and "No hosts found" not in line and "Usage:" not in line %}
-
         <tr>
-            <!-- Extract ONLY the first character, e.g. "1) mikrotik1" → "1" -->
+
             <td>{{ line|slice:":1" }}</td>
 
             <td>{{ line }}</td>
@@ -48,13 +47,11 @@
                 <form method="post" style="display:inline">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="delete">
-                    <!-- Send the delete index -->
                     <input type="hidden" name="target" value="{{ line|slice:':1' }}">
                     <button type="submit">Delete</button>
                 </form>
             </td>
         </tr>
-
         {% endif %}
     {% empty %}
         <tr><td colspan="3">No devices found.</td></tr>
@@ -81,5 +78,4 @@
     <button type="submit">Add</button>
 </form>
 
-</body>
-</html>
+{% endblock %}

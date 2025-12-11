@@ -1,10 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<header>
+    <h1>Mikrotik Configuration Panel</h1>
 
-</body>
-</html>
+    <nav>
+        <ul style="list-style: none; padding: 0; margin: 0;">
+            <li style="display: inline; margin-right: 20px;">
+                <a href="{% url 'configdev:add_dell' %}">Manage Mikrotik</a>
+            </li>
+
+            <li style="display: inline; margin-right: 20px;">
+                <a href="{% url 'configdev:config_mikrotick' %}">Config Mikrotik</a>
+            </li>
+
+            <li style="display: inline; margin-right: 20px;">
+                <a href="{% url 'configdev:check' %}">Check Mikrotik</a>
+            </li>
+        </ul>
+    </nav>
+
+    <hr>
+</header>
