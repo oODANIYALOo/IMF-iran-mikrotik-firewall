@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Check Mikrotik Status</title>
+</head>
+<body>
+
+<form method="POST">
+    {% csrf_token %}
+    <input type="number" name="number" placeholder="عدد" required>
+    <button type="submit">Submit</button>
+</form>
+
+{% if output_text %}
+<h2>Output: </h2>
+<div>
+    {% for line in output_text %}
+        <div>{{ line }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+</body>
+</html>
