@@ -91,7 +91,7 @@ hostname_task() {
 EOF
 }
 
-create_dhcp_server_task() {
+dhcp_server_task() {
     cat >> "$TASKS_FILE" << EOF
     - name: Configure DHCP Server
       community.routeros.command:
@@ -103,13 +103,75 @@ create_dhcp_server_task() {
 EOF
 }
 
-create_vlan_task() {
+vlan_task() {
     cat >> "$TASKS_FILE" << EOF
     - name: Configure VLAN ${CONFIG[VLAN_ID]} on ${CONFIG[VLAN_INTERFACE]}
       community.routeros.command:
         commands:
           - /interface vlan add name=vlan${CONFIG[VLAN_ID]} interface=${CONFIG[VLAN_INTERFACE]} vlan-id=${CONFIG[VLAN_ID]}
           - /ip address add address=10.0.${CONFIG[VLAN_ID]}.1/24 interface=vlan${CONFIG[VLAN_ID]}
+
+EOF
+}
+
+firewall_task() {
+    cat >> "$TASKS_FILE" << EOF
+    - name: Configure Simple Firewall Rules
+      community.routeros.command:
+        commands:
+          - /ip firewall filter
+          - add chain=input action=accept protocol=tcp dst-port=22 comment="Allow SSH"
+          - add chain=input action=accept protocol=icmp comment="Allow ICMP"
+          - add chain=input action=accept protocol=udp dst-port=53 comment="Allow DNS"
+          - add chain=input action=accept protocol=udp dst-port=67-68 comment="Allow DHCP"
+          - add chain=input action=drop in-interface=!lan comment="Drop everything else not from LAN"
+          - add chain=forward action=fasttrack-connection connection-state=established,related comment="FastTrack"
+          - add chain=forward action=accept connection-state=established,related
+          - add chain=forward action=drop connection-state=invalid
+          - add chain=forward action=drop connection-state=new connection-nat-state=!dstnat in-interface=wan
+          - add chain=forward action=accept out-interface=wan comment="Allow outgoing traffic"
+
+EOF
+}
+
+harden_task() {
+    cat >> "$TASKS_FILE" << EOF
+    - name: Configure System Hardening
+      community.routeros.command:
+        commands:
+          - /ip service disable telnet
+          - /ip service disable ftp
+          - /ip service disable www
+          - /ip service set api disabled=yes
+          - /ip service set api-ssl disabled=yes
+          - /ip service set winbox address=192.168.88.0/24
+          - /user set admin password="\$(cat /dev/urandom | tr -dc 'A-Za-z0-9!@#$%^&*()' | head -c 16)"
+          - /system logging action set memory memory-lines=500
+          - /system logging add topics=firewall,info action=memory
+          - /ip socks set enabled=no
+          - /ip proxy set enabled=no
+          - /tool bandwidth-server set enabled=no
+
+EOF
+}
+
+add_route_task() {
+    cat >> "$TASKS_FILE" << EOF
+    - name: Add Static Route to ${CONFIG[ROUTE_DEST]}
+      community.routeros.command:
+        commands:
+          - /ip route add dst-address=${CONFIG[ROUTE_DEST]} gateway=${CONFIG[ROUTE_GATEWAY]} distance=1 check-gateway=ping
+
+EOF
+}
+
+set_ntp_task() {
+    cat >> "$TASKS_FILE" << EOF
+    - name: Configure NTP Client
+      community.routeros.command:
+        commands:
+          - /system ntp client set enabled=yes primary-ntp=${CONFIG[NTP_SERVER]} secondary-ntp=time.google.com
+          - /system clock set time-zone-name=Asia/Tehran
 
 EOF
 }
