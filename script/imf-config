@@ -61,6 +61,7 @@ declare -A CONFIG=(
     [SET_NTP]="false"
     [NTP_SERVER]="pool.ntp.org"
     [OUTPUT_FILE]="mikrotik-config.yml"
+    [IMF_CONFIG_LOG]=".imf-config.log"
 )
 
 
@@ -176,16 +177,78 @@ set_ntp_task() {
 EOF
 }
 
+log_message() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')]: $1" >> ${CONFIG[IMF_CONFIG_LOG]}
+}
+
+validate_ip() {
+    local ip=$1
+    if [[ $ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(/[0-9]+)?$ ]] || 
+       [[ $ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+-[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        return 0
+    else
+        return 1
+    fi
 
 create_yaml() {
 
 	if [ "${CONFIG[HEADER]}" = "true" ]; then
 		playbook_header
+		log_message "create header and yaml file task added"
 	fi
 
 	if [ "${CONFIG[HOSTNAME]}" = "true" ]; then
 		hostname_task
+		log_message "Hostname task added"
 	fi
+
+	if [ "${CONFIG[DHCP_SERVER]}" = "true" ]; then
+        if validate_ip "${CONFIG[DHCP_POOL]}" && validate_ip "${CONFIG[DHCP_NETWORK]}"; then
+            create_dhcp_server_task
+            log_message "DHCP Server task added"
+        else
+            log_message "Error: Invalid DHCP IP address"
+            return 1
+        fi
+    fi
+
+    if [ "${CONFIG[VLAN]}" = "true" ]; then
+        if [[ "${CONFIG[VLAN_ID]}" =~ ^[0-9]+$ ]] && [ "${CONFIG[VLAN_ID]}" -ge 1 ] && [ "${CONFIG[VLAN_ID]}" -le 4094 ]; then
+            create_vlan_task
+            log_message "VLAN task added"
+        else
+            log_message "Error: Invalid VLAN ID (must be between 1 and 4094)"
+            return 1
+        fi
+    fi
+
+    if [ "${CONFIG[FIREWALL]}" = "true" ]; then
+        create_firewall_task
+        log_message "Firewall task added"
+    fi
+
+    if [ "${CONFIG[HARDEN]}" = "true" ]; then
+        create_harden_task
+        log_message "Hardening task added"
+    fi
+
+    if [ "${CONFIG[ADD_ROUTE]}" = "true" ]; then
+        if validate_ip "${CONFIG[ROUTE_DEST]}" && validate_ip "${CONFIG[ROUTE_GATEWAY]}"; then
+            create_add_route_task
+            log_message "Static Route task added"
+        else
+            log_message "Error: Invalid Route address"
+            return 1
+        fi
+    fi
+
+    if [ "${CONFIG[SET_NTP]}" = "true" ]; then
+        create_set_ntp_task
+        log_message "NTP task added"
+    fi
+
+    log_message "Configuration file created at ${CONFIG[OUTPUT_FILE]}"
+    return 0
 }
 
 arguments() {
