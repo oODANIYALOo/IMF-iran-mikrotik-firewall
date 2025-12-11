@@ -1,68 +1,165 @@
 #!/bin/bash
 
-SET-HOSTNAME() {
-  echo hostname
+SCRIPT_NAME="imf-config"
+
+show_help() {
+    cat << EOF
+help
+EOF
+    exit 0
 }
 
-VLAN() {
-  echo VLAN
+declare -A CONFIG=(
+    [HOSTNAME]=""
+    [DHCP_SERVER]="false"
+    [DHCP_POOL]="192.168.1.100-192.168.1.200"
+    [DHCP_NETWORK]="192.168.1.0/24"
+    [VLAN]="false"
+    [VLAN_ID]="10"
+    [VLAN_INTERFACE]="ether1"
+    [FIREWALL]="false"
+    [HARDEN]="false"
+    [ADD_ROUTE]="false"
+    [ROUTE_DEST]="10.0.0.0/8"
+    [ROUTE_GATEWAY]="192.168.1.254"
+    [SET_NTP]="false"
+    [NTP_SERVER]="pool.ntp.org"
+    [OUTPUT_FILE]="mikrotik-config.yml"
+)
+
+
+
+# all config
+playbook_header() {
+    cat > "$HEADER_FILE" << EOF
+---
+- name: Configure MikroTik Router
+  hosts: mikrotik
+  gather_facts: no
+  connection: ansible.netcommon.network_cli
+
+  vars:
+    ansible_network_os: community.routeros.routeros
+    
+  tasks:
+EOF
 }
 
-DHCP-SERVER() {
-  echo DHCP-SERVER
+create_hostname_task() {
+    cat >> "$TASKS_FILE" << EOF
+    - name: Set hostname to ${CONFIG[HOSTNAME]}
+      community.routeros.command:
+        commands:
+          - /system identity set name=${CONFIG[HOSTNAME]}
+
+EOF
 }
 
-FIREWALL() {
-  echo FIREWALL
+
+
+arguments() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --hostname)
+                CONFIG[HOSTNAME]="$2"
+                shift 2
+                ;;
+            --dhcp-server)
+                CONFIG[DHCP_SERVER]="true"
+                shift
+                ;;
+            --dhcp-pool)
+                CONFIG[DHCP_POOL]="$2"
+                shift 2
+                ;;
+            --dhcp-network)
+                CONFIG[DHCP_NETWORK]="$2"
+                shift 2
+                ;;
+            --vlan)
+                CONFIG[VLAN]="true"
+                shift
+                ;;
+            --vlan-id)
+                CONFIG[VLAN_ID]="$2"
+                shift 2
+                ;;
+            --vlan-interface)
+                CONFIG[VLAN_INTERFACE]="$2"
+                shift 2
+                ;;
+            --firewall)
+                CONFIG[FIREWALL]="true"
+                shift
+                ;;
+            --harden)
+                CONFIG[HARDEN]="true"
+                shift
+                ;;
+            --add-route)
+                CONFIG[ADD_ROUTE]="true"
+                shift
+                ;;
+            --route-dest)
+                CONFIG[ROUTE_DEST]="$2"
+                shift 2
+                ;;
+            --route-gateway)
+                CONFIG[ROUTE_GATEWAY]="$2"
+                shift 2
+                ;;
+            --set-ntp)
+                CONFIG[SET_NTP]="true"
+                shift
+                ;;
+            --ntp-server)
+                CONFIG[NTP_SERVER]="$2"
+                shift 2
+                ;;
+            --output-file)
+                CONFIG[OUTPUT_FILE]="$2"
+                shift 2
+                ;;
+            --help)
+                show_help
+                ;;
+            *)
+                echo "argument error: not found : $1"
+                show_help
+                exit 1
+                ;;
+        esac
+    done
 }
 
-SET-NTP() {
-  echo SET-NTP
+
+main() {
+    arguments "$@"
+
+
+    if ! validate_inputs; then
+        exit 1
+    fi
+
+
+    show_config_summary
+
+
+    setup_temp_files
+    trap cleanup_temp_files EXIT
+
+
+    if create_yaml; then
+        echo "succes"
+    else
+        exit 1
+    fi
 }
 
-SIMPLE-HARDEN() {
-  echo SIMPLE-HARDEN
-}
-
-ADD-ROUTE() {
-  echo ADD-ROUTE
-}
-
-ANSWER=$(dialog --checklist "checklist" 20 35 18 \
-  "SET-HOSTNAME" 1 "off" \
-  "VLAN" 2 "off" \
-  "DHCP-SERVER" 3 "off" \
-  "FIREWALL" 4 "off" \
-  "SET-NTP" 5 "off" \
-  "SIMPLE-HARDEN" 6 "off" \
-  "ADD-ROUTE" 7 "off" 3>&1 1>&2 2>&3)
-
-for OP in $ANSWER; do
-  case "$OP" in
-  SET-HOSTNAME)
-    SET-HOSTNAME
-    ;;
-  VLAN)
-    VLAN
-    ;;
-  DHCP-SERVER)
-    DHCP-SERVER
-    ;;
-  FIREWALL)
-    FIREWALL
-    ;;
-  SET-NTP)
-    SET-NTP
-    ;;
-  SIMPLE-HARDEN)
-    SIMPLE-HARDEN
-    ;;
-  ADD-ROUTE)
-    ADD-ROUTE
-    ;;
-  *)
-    echo error case: wrong input $OP
-    ;;
-  esac
-
-done
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    if [ $# -eq 0 ]; then
+        show_help
+    else
+        main "$@"
+    fi
+fi
