@@ -85,7 +85,40 @@ CHECK() {
 }
 
 CONFIG() {
-  source ./script/CONFIG.sh
+	IMF_CONFIG=script/imf-config
+	CONFIG_CMD="header"
+	ANSWER=$(dialog --checklist "checklist" 20 35 18 \
+		"SET-HOSTNAME" 1 "off" \
+		"VLAN" 2 "off" \
+		"DHCP-SERVER" 3 "off" \
+		"FIREWALL" 4 "off" \
+		"SET-NTP" 5 "off" \
+		"SIMPLE-HARDEN" 6 "off" \
+		"ADD-ROUTE" 7 "off" 3>&1 1>&2 2>&3)
+
+for OP in $ANSWER; do
+  case "$OP" in
+  SET-HOSTNAME)
+	CONFIG_CMD="$CONFIG_CMD --hostname";;
+  VLAN)
+	CONFIG_CMD="$CONFIG_CMD --vlan";;
+  DHCP-SERVER)
+	CONFIG_CMD="$CONFIG_CMD --dhcp-server";;
+  FIREWALL)
+	CONFIG_CMD="$CONFIG_CMD --firewall";;
+  SET-NTP)
+	CONFIG_CMD="$CONFIG_CMD --set-ntp";;
+  SIMPLE-HARDEN)
+	CONFIG_CMD="$CONFIG_CMD --harden";;
+  ADD-ROUTE)
+	CONFIG_CMD="$CONFIG_CMD --add-route";;
+  *)
+    echo error case: wrong input $OP
+    ;;
+  esac
+
+done
+
 }
 
 WEB() {
