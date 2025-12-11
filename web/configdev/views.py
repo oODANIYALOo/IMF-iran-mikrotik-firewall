@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from django.views import View
 
 # address of dani script add
+IMF_CONFIG = "imf-config"
 IMF_INVENTORY = "imf-inventory"
 INVENTORY_PATH = "/app/inventory.ini"
 
@@ -54,5 +55,20 @@ class CheckMikrotick(View):
 
 
 class ConfigMikrotick(View):
+    def run_imf(self, command):
+        cmd = f"{IMF_CONFIG} {command}"
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        return result.stdout
+
     def get(self, request):
-        pass
+        # # Show device list
+        # output = self.run_imf("show | grep mikrotik")
+        # devices = output.splitlines()
+        return render(request, "devices/config.html")
+    def post(self, request):
+        action = request.POST.get("action")
+        # this change host name
+        if action == "host_name":
+            host_name = request.POST.get("host_name")
+            self.run_imf(f"--hostname {host_name}")
+        return render(request, "devices/config.html")
