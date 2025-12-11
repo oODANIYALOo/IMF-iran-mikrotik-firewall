@@ -86,7 +86,7 @@ CHECK() {
 
 CONFIG() {
 	IMF_CONFIG=script/imf-config
-	CONFIG_CMD="header"
+	CONFIG_CMD="--header"
 	ANSWER=$(dialog --checklist "checklist" 20 35 18 \
 		"SET-HOSTNAME" 1 "off" \
 		"VLAN" 2 "off" \
@@ -98,8 +98,9 @@ CONFIG() {
 
 for OP in $ANSWER; do
   case "$OP" in
-  SET-HOSTNAME)
-	CONFIG_CMD="$CONFIG_CMD --hostname";;
+	SET-HOSTNAME)
+		TMP=$(dialog --title "enter your device hostname" --inputbox "IMF" 4 40 3>&1 1>&2 2>&3)
+		CONFIG_CMD="$CONFIG_CMD --hostname $TMP";;
   VLAN)
 	CONFIG_CMD="$CONFIG_CMD --vlan";;
   DHCP-SERVER)
@@ -119,6 +120,12 @@ for OP in $ANSWER; do
 
 done
 
+	imf-config $CONFIG_CMD 
+	if $? ;then
+		ansible-playbook -i inventory.ini mikrotik-config.yml
+	else
+		dialog --msgbox "IMF-CONFIG ERROR" 3 30
+	fi
 }
 
 WEB() {

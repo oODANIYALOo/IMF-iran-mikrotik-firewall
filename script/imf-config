@@ -2,15 +2,49 @@
 
 SCRIPT_NAME="imf-config"
 
+
+# Show help
 show_help() {
     cat << EOF
-help
+Usage: $SCRIPT_NAME [options]
+
+Main options:
+  --hostname name           Set hostname (required)
+  --dhcp-server             Add DHCP Server
+  --vlan                    Add VLAN configuration
+  --firewall                Add Simple Firewall
+  --harden                  Add Simple Harden
+  --add-route               Add Static Route
+  --set-ntp                 Set NTP Server
+
+Advanced options:
+  dhcp-server
+  --dhcp-pool address       DHCP Pool range (default: 192.168.1.100-192.168.1.200)
+  --dhcp-network network    DHCP Network (default: 192.168.1.0/24)
+  vlan
+  --vlan-id number          VLAN ID (default: 10)
+  --vlan-interface iface    VLAN Interface (default: ether1)
+  add route
+  --route-dest destination  Route Destination (default: 10.0.0.0/8)
+  --route-gateway gateway   Route Gateway (default: 192.168.1.254)
+  set ntp
+  --ntp-server server       NTP Server (default: pool.ntp.org)
+
+General options:
+  --output-file filename    Output filename (default: mikrotik-config.yml)
+  --help                    Show this help message
+
+Examples:
+  $SCRIPT_NAME --hostname router1 --dhcp-server --dhcp-pool "192.168.10.50-192.168.10.150"
+  $SCRIPT_NAME --hostname router1 --vlan --vlan-id 20 --vlan-interface ether2
 EOF
     exit 0
 }
 
 declare -A CONFIG=(
-    [HOSTNAME]=""
+    [HEADER]="false"
+    [HOSTNAME]="false"
+    [HOST_NAME]=""
     [DHCP_SERVER]="false"
     [DHCP_POOL]="192.168.1.100-192.168.1.200"
     [DHCP_NETWORK]="192.168.1.0/24"
@@ -31,7 +65,7 @@ declare -A CONFIG=(
 
 # all config
 playbook_header() {
-    cat > "$HEADER_FILE" << EOF
+    cat > "${CONFIG[OUTPUT_FILE]}" << "EOF"
 ---
 - name: Configure MikroTik Router
   hosts: mikrotik
@@ -45,23 +79,37 @@ playbook_header() {
 EOF
 }
 
-create_hostname_task() {
-    cat >> "$TASKS_FILE" << EOF
-    - name: Set hostname to ${CONFIG[HOSTNAME]}
+hostname_task() {
+    cat >> "${CONFIG[OUTPUT_FILE]}" << EOF
+    - name: Set hostname to ${CONFIG[HOST_NAME]}
       community.routeros.command:
         commands:
-          - /system identity set name=${CONFIG[HOSTNAME]}
+          - /system identity set name=${CONFIG[HOST_NAME]}
 
 EOF
 }
 
+create_yaml() {
 
+	if [ "${CONFIG[HEADER]}" = "true" ]; then
+		playbook_header
+	fi
+
+	if [ "${CONFIG[HOSTNAME]}" = "true" ]; then
+		hostname_task
+	fi
+}
 
 arguments() {
     while [[ $# -gt 0 ]]; do
         case $1 in
+            --header)
+                CONFIG[HEADER]="true"
+                shift
+                ;;
             --hostname)
-                CONFIG[HOSTNAME]="$2"
+                CONFIG[HOSTNAME]="true"
+                CONFIG[HOST_NAME]="$2"
                 shift 2
                 ;;
             --dhcp-server)
@@ -134,27 +182,36 @@ arguments() {
 
 
 main() {
+    # Parse arguments
     arguments "$@"
-
-
-    if ! validate_inputs; then
-        exit 1
-    fi
-
-
-    show_config_summary
-
-
-    setup_temp_files
-    trap cleanup_temp_files EXIT
-
-
+    
+    
+    # Create configuration
     if create_yaml; then
-        echo "succes"
+        echo "✅ Configuration file successfully created!"
+        echo ""
+        echo "📝 Usage:"
+        echo "ansible-playbook -i inventory.ini ${CONFIG[OUTPUT_FILE]}"
+        echo ""
+        echo "🔧 Sample inventory.ini:"
+        cat << EOF
+[mikrotik]
+router.local ansible_host=192.168.88.1 ansible_user=admin ansible_password=admin ansible_connection=ansible.netcommon.network_cli
+
+[all:vars]
+ansible_network_os=community.routeros.routeros
+EOF
+        echo ""
+        echo "⚠️  Notes:"
+        echo "  - Change admin password in inventory before execution"
+        echo "  - Adjust IP address to match your actual router"
+        echo "  - Ensure community.routeros collection is installed"
     else
+        echo "❌ Error creating configuration file"
         exit 1
     fi
 }
+
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     if [ $# -eq 0 ]; then
