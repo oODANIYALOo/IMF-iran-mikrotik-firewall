@@ -50,7 +50,7 @@ class CheckMikrotick(View):
             | grep -e version -e memory -e cpu -e platform | \
 		       	tail -8 | cut -d \'\"\' -f 2", shell=True, capture_output=True, text=True)
 
-        return render(request, 'check.html', result.stdout)
+        return render(request, 'devices/check.html', {"output": result.stdout})
 
 
 class ConfigMikrotick(View):

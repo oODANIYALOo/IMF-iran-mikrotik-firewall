@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MikroTik Check Result</title>
+</head>
+<body>
+
+<h1>MikroTik Device Check</h1>
+
+{% if output %}
+    <h3>Command Output:</h3>
+    <pre>{{ output }}</pre>
+{% else %}
+    <p>No data received.</p>
+{% endif %}
+
+</body>
+</html>
