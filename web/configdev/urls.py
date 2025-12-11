@@ -1,6 +1,7 @@
 from django.urls import path
 from configdev.views import AddAndDeleteMikrotickViewe,ConfigMikrotick,CheckMikrotick,IndexView
 
+app_name = "configdev"
 urlpatterns = [
     path("",IndexView.as_view(), name="index"),
     path("add_dell/", AddAndDeleteMikrotickViewe.as_view(), name="add_dell"),
