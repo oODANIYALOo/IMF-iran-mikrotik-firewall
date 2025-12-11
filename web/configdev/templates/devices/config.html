@@ -1,19 +1,37 @@
 {% extends 'parent/base.html' %}
 
-{% block title %}
-Mikrotik Configuration
-{% endblock %}
+{% block title %}Mikrotik Configuration{% endblock %}
 
 {% block content %}
 <h2>Mikrotik Configuration</h2>
 
 <form method="POST">
     {% csrf_token %}
-    <input type="hidden" name="action" value="host_name">
 
-    <label for="host_name">New Hostname:</label>
-    <input type="text" id="host_name" name="host_name" required>
+    <!-- Hostname -->
+    <label>Hostname:</label>
+    <input type="text" name="hostname">
 
-    <button type="submit">Apply Hostname</button>
+    <!-- VLAN ID -->
+    <label>VLAN ID:</label>
+    <input type="text" name="vlan">
+
+    <!-- DHCP Server Name -->
+    <label>DHCP Server Name:</label>
+    <input type="text" name="dhcp_server">
+
+    <!-- NTP Server -->
+    <label>NTP Server:</label>
+    <input type="text" name="ntp_server">
+
+    <!-- Default Route -->
+    <label>Default Route:</label>
+    <input type="text" name="default_route">
+
+    <!-- Execute Ansible -->
+    <label>Run Ansible (optional):</label>
+    <input type="checkbox" name="execute" value="1">
+
+    <button type="submit">Apply Configuration</button>
 </form>
 {% endblock %}

@@ -5,8 +5,8 @@ from django.views import View
 # address of dani script add
 IMF_CONFIG = "imf-config"
 IMF_INVENTORY = "imf-inventory"
-INVENTORY_PATH = "/app/inventory.ini"
-
+ANSI_MIKROTICK_INVENTORY= "inventory.ini"
+ANSI_MIKROTICK_CONFIG = "mikrotik-config"
 class IndexView(View):
     def get(self, request):
         return render(request, "index.html")
@@ -55,20 +55,46 @@ class CheckMikrotick(View):
 
 
 class ConfigMikrotick(View):
+
+    def execute(self):
+        cmd = f"ansible-playbook -i {ANSI_MIKROTICK_INVENTORY} {ANSI_MIKROTICK_CONFIG}"
+        return subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout
+
     def run_imf(self, command):
-        cmd = f"{IMF_CONFIG} {command}"
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-        return result.stdout
+        cmd = f"{IMF_CONFIG} {command}".strip()
+        return subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout
 
     def get(self, request):
-        # # Show device list
-        # output = self.run_imf("show | grep mikrotik")
-        # devices = output.splitlines()
         return render(request, "devices/config.html")
+
     def post(self, request):
-        action = request.POST.get("action")
-        # this change host name
-        if action == "host_name":
-            host_name = request.POST.get("host_name")
-            self.run_imf(f"--hostname {host_name}")
-        return render(request, "devices/config.html")
+        hostname = request.POST.get("hostname", "").strip()
+        vlan = request.POST.get("vlan", "").strip()
+        dhcp_server = request.POST.get("dhcp_server", "").strip()
+        ntp = request.POST.get("ntp_server", "").strip()
+        default_route = request.POST.get("default_route", "").strip()
+        execute_flag = request.POST.get("execute")
+
+        args = []
+
+        if hostname:
+            args.append(f"--hostname {hostname}")
+        if vlan:
+            args.append(f"--vlan {vlan}")
+        if dhcp_server:
+            args.append(f"--dhcp-server {dhcp_server}")
+        if ntp:
+            args.append(f"--ntp {ntp}")
+        if default_route:
+            args.append(f"--route {default_route}")
+
+        argument_string = " ".join(args)
+
+        # Execute once
+        if execute_flag and argument_string:
+            self.run_imf(argument_string)
+            self.execute()
+
+        return render(request, "devices/config.html", {
+            "msg": "Configuration applied successfully."
+        })
