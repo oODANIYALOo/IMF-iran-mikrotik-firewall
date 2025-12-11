@@ -192,7 +192,7 @@ validate_ip() {
 
 create_yaml() {
 
-	if [ "${CONFIG[HEADER]}" = "true" ]; then
+	if [ "${CONFIG[HEADER]}" = "true" ] || [ -e ${CONFIG[HEADER]} ] || ! grep "tasks:" ${CONFIG[HEADER]} ; then
 		playbook_header
 		log_message "create header and yaml file task added"
 	fi
