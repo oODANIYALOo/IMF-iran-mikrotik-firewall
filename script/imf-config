@@ -9,6 +9,7 @@ show_help() {
 Usage: $SCRIPT_NAME [options]
 
 Main options:
+  --header		    (important) for create header file - use for create yaml file
   --hostname name           Set hostname (required)
   --dhcp-server             Add DHCP Server
   --vlan                    Add VLAN configuration
@@ -35,6 +36,7 @@ General options:
   --help                    Show this help message
 
 Examples:
+  $SCRIPT_NAME --hostname NAME 
   $SCRIPT_NAME --hostname router1 --dhcp-server --dhcp-pool "192.168.10.50-192.168.10.150"
   $SCRIPT_NAME --hostname router1 --vlan --vlan-id 20 --vlan-interface ether2
 EOF
@@ -68,7 +70,7 @@ playbook_header() {
     cat > "${CONFIG[OUTPUT_FILE]}" << "EOF"
 ---
 - name: Configure MikroTik Router
-  hosts: mikrotik
+  hosts: allmikrotik
   gather_facts: no
   connection: ansible.netcommon.network_cli
 
