@@ -3,79 +3,55 @@
 {% block title %}Device Manager{% endblock %}
 
 {% block content %}
+<div class="status-card animate-slide-in">
 
-<style>
-    table {
-        border-collapse: collapse;
-        width: 70%;
-    }
-    th, td {
-        border: 1px solid #333;
-        padding: 8px;
-        text-align: left;
-    }
-    th {
-        background-color: #eee;
-    }
-    form {
-        margin: 0;
-    }
-    input, button {
-        padding: 4px;
-        margin: 2px 0;
-    }
-</style>
+    <h2 class="dashboard-title">Device List</h2>
 
-<h2>Device List</h2>
-
-<table>
-    <tr>
-        <th>#</th>
-        <th>Device Entry</th>
-        <th>Action</th>
-    </tr>
-
-    {% for line in devices %}
-        {% if line and "No hosts found" not in line and "Usage:" not in line %}
+    <table>
         <tr>
-
-            <td>{{ line|slice:":1" }}</td>
-
-            <td>{{ line }}</td>
-
-            <td>
-                <form method="post" style="display:inline">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="target" value="{{ line|slice:':1' }}">
-                    <button type="submit">Delete</button>
-                </form>
-            </td>
+            <th>#</th>
+            <th>Device Entry</th>
+            <th>Action</th>
         </tr>
-        {% endif %}
-    {% empty %}
-        <tr><td colspan="3">No devices found.</td></tr>
-    {% endfor %}
-</table>
 
-<hr>
+        {% for line in devices %}
+            {% if line and "No hosts found" not in line and "Usage:" not in line %}
+            <tr>
+                <td>{{ line|slice:":1" }}</td>
+                <td>{{ line }}</td>
+                <td>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="target" value="{{ line|slice:':1' }}">
+                        <button class="btn-secondary" type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endif %}
+        {% empty %}
+            <tr><td colspan="3">No devices found.</td></tr>
+        {% endfor %}
+    </table>
 
-<h3>Add Device</h3>
+    <hr>
 
-<form method="post">
-    {% csrf_token %}
-    <input type="hidden" name="action" value="add">
+    <h3 class="dashboard-title">Add Device</h3>
 
-    <label>IP:</label>
-    <input type="text" name="ip" required>
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add">
 
-    <label>User:</label>
-    <input type="text" name="user" required>
+        <label>IP:</label>
+        <input type="text" name="ip" required>
 
-    <label>Password:</label>
-    <input type="text" name="password" required>
+        <label>User:</label>
+        <input type="text" name="user" required>
 
-    <button type="submit">Add</button>
-</form>
+        <label>Password:</label>
+        <input type="text" name="password" required>
 
+        <button class="btn-primary" type="submit">Add</button>
+    </form>
+</div>
 {% endblock %}

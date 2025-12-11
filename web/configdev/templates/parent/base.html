@@ -8,6 +8,7 @@
 
     <title>{% block title %}{% endblock %}</title>
 
+    <!-- CSS -->
     <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
 </head>
 
@@ -15,12 +16,15 @@
 
     {% include 'partials/header.html' %}
 
-    <main>
+    <!-- Main Page Container -->
+    <main class="dashboard-container">
         {% block content %}
         {% endblock %}
     </main>
 
     {% include 'partials/footer.html' %}
 
+    <!-- JS -->
+    <script src="{% static 'js/base.js' %}"></script>
 </body>
 </html>

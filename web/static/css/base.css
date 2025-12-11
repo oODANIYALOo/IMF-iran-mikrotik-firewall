@@ -1,0 +1,288 @@
+/* ------------------ Base Styles ------------------ */
+body {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  background: #0f172a;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #f1f5f9;
+}
+
+/* ------------------ Header Styles ------------------ */
+header {
+  background: #1e293b;
+  padding: 20px 24px;
+  border-bottom: 1px solid #334155;
+  border-radius: 0 0 12px 12px;
+}
+
+header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 10px 0;
+  color: #f1f5f9;
+}
+
+header nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 20px;
+}
+
+header nav ul li {
+  display: inline;
+}
+
+header nav ul li a {
+  text-decoration: none;
+  color: #3b82f6;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+header nav ul li a:hover {
+  color: #2563eb;
+}
+
+header hr {
+  margin-top: 16px;
+  border: 0;
+  height: 1px;
+  background: #334155;
+}
+
+/* ------------------ Buttons ------------------ */
+.btn-primary {
+  background: #3b82f6;
+  color: #ffffff;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  width: auto !important;
+  display: inline-block !important;
+  gap: 0 !important;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+}
+
+.btn-secondary {
+  background: #d9534f;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  width: auto;
+  display: inline-block;
+}
+
+.btn-secondary:hover {
+  background: #c9302c;
+}
+
+/* ------------------ Form Layout ------------------ */
+form label,
+form input {
+  display: block;
+  margin-bottom: 10px;
+}
+
+form button {
+  margin-top: 12px;
+}
+
+/* ------------------ Dashboard Container ------------------ */
+.dashboard-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* ------------------ Dashboard Titles ------------------ */
+.dashboard-title {
+  color: #f1f5f9;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.dashboard-subtitle {
+  color: #94a3b8;
+  font-size: 16px;
+}
+
+/* ------------------ Metric Cards ------------------ */
+.metric-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 24px;
+  transition: transform 0.2s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+}
+
+.metric-label {
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.metric-value {
+  color: #f1f5f9;
+  font-size: 32px;
+  font-weight: 700;
+  margin: 8px 0;
+}
+
+.metric-change {
+  color: #22c55e;
+  font-size: 13px;
+}
+
+/* ------------------ Device Status Cards ------------------ */
+.status-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.status-item {
+  background: #0f172a;
+  padding: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.status-item:last-child {
+  margin-bottom: 0;
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 16px;
+}
+
+.status-healthy { background: #22c55e; }
+.status-warning { background: #f59e0b; }
+.status-error { background: #ef4444; }
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.badge-healthy { background: #166534; color: #86efac; }
+.badge-warning { background: #78350f; color: #fcd34d; }
+
+/* ------------------ Activity Feed ------------------ */
+.activity-item {
+  background: #0f172a;
+  padding: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.activity-item:last-child {
+  margin-bottom: 0;
+}
+
+.activity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+
+.activity-title {
+  color: #f1f5f9;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.activity-description {
+  color: #64748b;
+  font-size: 13px;
+}
+
+/* ------------------ MikroTik Check Page ------------------ */
+.mikrotik-check {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 20px;
+}
+
+.mikrotik-check h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 16px;
+}
+
+.mikrotik-check h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #3b82f6;
+  margin-bottom: 12px;
+}
+
+.mikrotik-check pre {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 16px;
+  color: #f1f5f9;
+  overflow-x: auto;
+  font-family: 'Fira Code', monospace;
+  font-size: 14px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.mikrotik-check p {
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+/* ------------------ Utility Classes ------------------ */
+.text-success { color: #22c55e; }
+.text-warning { color: #f59e0b; }
+.text-error { color: #ef4444; }
+.text-muted { color: #94a3b8; }
+
+/* ------------------ Animations ------------------ */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.status-active { animation: pulse-glow 2s ease-in-out infinite; }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-in { animation: slideIn 0.5s ease-out forwards; }
