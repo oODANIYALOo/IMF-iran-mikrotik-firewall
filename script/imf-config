@@ -91,6 +91,30 @@ hostname_task() {
 EOF
 }
 
+create_dhcp_server_task() {
+    cat >> "$TASKS_FILE" << EOF
+    - name: Configure DHCP Server
+      community.routeros.command:
+        commands:
+          - /ip pool add name=dhcp_pool ranges=${CONFIG[DHCP_POOL]}
+          - /ip dhcp-server network add address=${CONFIG[DHCP_NETWORK]} gateway=\${split("${CONFIG[DHCP_NETWORK]}", "/")[0]%.*}.1
+          - /ip dhcp-server add name=dhcp1 interface=bridge-local disabled=no address-pool=dhcp_pool
+
+EOF
+}
+
+create_vlan_task() {
+    cat >> "$TASKS_FILE" << EOF
+    - name: Configure VLAN ${CONFIG[VLAN_ID]} on ${CONFIG[VLAN_INTERFACE]}
+      community.routeros.command:
+        commands:
+          - /interface vlan add name=vlan${CONFIG[VLAN_ID]} interface=${CONFIG[VLAN_INTERFACE]} vlan-id=${CONFIG[VLAN_ID]}
+          - /ip address add address=10.0.${CONFIG[VLAN_ID]}.1/24 interface=vlan${CONFIG[VLAN_ID]}
+
+EOF
+}
+
+
 create_yaml() {
 
 	if [ "${CONFIG[HEADER]}" = "true" ]; then
