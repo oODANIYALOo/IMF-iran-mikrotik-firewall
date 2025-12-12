@@ -6,7 +6,7 @@ from django.views import View
 IMF_CONFIG = "imf-config"
 IMF_INVENTORY = "imf-inventory"
 ANSI_MIKROTICK_INVENTORY= "inventory.ini"
-ANSI_MIKROTICK_CONFIG = "mikrotik-config"
+ANSI_MIKROTICK_CONFIG = "mikrotik-config.yml"
 class IndexView(View):
     def get(self, request):
         return render(request, "index.html")
