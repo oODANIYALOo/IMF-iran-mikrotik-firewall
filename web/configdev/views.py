@@ -1,6 +1,7 @@
 import subprocess
 from django.shortcuts import render, redirect
 from django.views import View
+from django.contrib import messages
 
 # address of dani script add
 IMF_CONFIG = "imf-config"
@@ -12,57 +13,84 @@ class IndexView(View):
         return render(request, "index.html")
 
 class AddAndDeleteMikrotickViewe(View):
-# this line is our script runer
-    def run_imf(self, command):
-        cmd = f"{IMF_INVENTORY} {command}"
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-        return result.stdout
 
+    # Run IMF command
+    def run_imf(self, request, command):
+        try:
+            cmd = f"{IMF_INVENTORY} {command}"
+            result = subprocess.run(
+                cmd, shell=True, capture_output=True, text=True
+            )
+            return result.stdout
+        except subprocess.CalledProcessError as e:
+            messages.error(request, e.stderr or str(e))
+            return ""
+
+    # Show device list
     def get(self, request):
-        # Show device list
-        output = self.run_imf("show | grep mikrotik")
+        output = self.run_imf(request, "show | grep mikrotik")
         devices = output.splitlines()
         return render(request, "devices/devices.html", {"devices": devices})
-# and this is control sender
+
+    # Handle add/delete dev
     def post(self, request):
         action = request.POST.get("action")
-# and this add dev
+
         if action == "add":
             ip = request.POST.get("ip")
             user = request.POST.get("user")
             password = request.POST.get("password")
-            self.run_imf(f"add {ip} {user} {password}")
-# and this delete dev
+
+            self.run_imf(request, f"add {ip} {user} {password}")
+            messages.success(request, "Device added successfully.")
 
         elif action == "delete":
             target = request.POST.get("target")
-            self.run_imf(f"del {target}")
+
+            self.run_imf(request, f"del {target}")
+            messages.success(request, "Device deleted successfully.")
 
         return redirect("configdev:add_dell")
-
-
 class CheckMikrotick(View):
     def get(self, request):
-        if request.method == 'POST':
-            number = request.POST.get('number')
+        try:
+            result = subprocess.run(
+                "ansible allmikrotik -m community.routeros.command "
+                "-a '{\"commands\": [\"/system resource print\"]}' -i /app/inventory.ini "
+                "| grep -e version -e memory -e cpu -e platform | "
+                "tail -8 | cut -d '\"' -f 2",
+                shell=True,
+                capture_output=True,
+                text=True
+            )
+            return render(request, 'devices/check.html', {"output": result.stdout})
 
-        result = subprocess.run("ansible allmikrotik -m community.routeros.command \
-	       	-a \'{\"commands\": [\"/system resource print\"]}\' -i /app/inventory.ini \
-            | grep -e version -e memory -e cpu -e platform | \
-		       	tail -8 | cut -d \'\"\' -f 2", shell=True, capture_output=True, text=True)
-
-        return render(request, 'devices/check.html', {"output": result.stdout})
-
-
+        except subprocess.CalledProcessError as e:
+            messages.error(request, e.stderr or str(e))
+            return render(request, 'devices/check.html', {"output": ""})
 class ConfigMikrotick(View):
 
-    def execute(self):
-        cmd = f"ansible-playbook -i {ANSI_MIKROTICK_INVENTORY} {ANSI_MIKROTICK_CONFIG}"
-        return subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout
+    def execute(self, request):
+        try:
+            cmd = f"ansible-playbook -i {ANSI_MIKROTICK_INVENTORY} {ANSI_MIKROTICK_CONFIG}"
+            result = subprocess.run(
+                cmd, shell=True, capture_output=True, text=True
+            )
+            return result.stdout
+        except subprocess.CalledProcessError as e:
+            messages.error(request, e.stderr or str(e))
+            return ""
 
-    def run_imf(self, command):
-        cmd = f"{IMF_CONFIG} {command}".strip()
-        return subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout
+    def run_imf(self, request, command):
+        try:
+            cmd = f"{IMF_CONFIG} {command}".strip()
+            result = subprocess.run(
+                cmd, shell=True, capture_output=True, text=True
+            )
+            return result.stdout
+        except subprocess.CalledProcessError as e:
+            messages.error(request, e.stderr or str(e))
+            return ""
 
     def get(self, request):
         return render(request, "devices/config.html")
@@ -73,7 +101,6 @@ class ConfigMikrotick(View):
         dhcp_server = request.POST.get("dhcp_server", "").strip()
         ntp = request.POST.get("ntp_server", "").strip()
         default_route = request.POST.get("default_route", "").strip()
-        execute_flag = request.POST.get("execute")
 
         args = []
 
@@ -90,11 +117,15 @@ class ConfigMikrotick(View):
 
         argument_string = " ".join(args)
 
-        # Execute once
-        if execute_flag and argument_string:
-            self.run_imf(argument_string)
-            self.execute()
+        if not argument_string:
+            messages.error(request, "Please enter at least one field.")
+            return render(request, "devices/config.html")
 
-        return render(request, "devices/config.html", {
-            "msg": "Configuration applied successfully."
-        })
+        # Run IMF commands
+        self.run_imf(request, argument_string)
+        # execute anis
+        self.execute(request)
+
+        messages.success(request, "Configuration applied successfully.")
+
+        return render(request, "devices/config.html")

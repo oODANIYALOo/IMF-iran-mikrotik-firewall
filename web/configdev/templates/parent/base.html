@@ -16,6 +16,36 @@
 
     {% include 'partials/header.html' %}
 
+    <!-- Django Messages -->
+    {% if messages %}
+        <div class="messages-container" style="margin: 15px;">
+            {% for message in messages %}
+                <div
+                    style="
+                        padding: 10px;
+                        margin-bottom: 10px;
+                        border-radius: 6px;
+                        font-size: 15px;
+
+                        background-color:
+                            {% if message.tags == 'error' %}#f8d7da{% endif %}
+                            {% if message.tags == 'success' %}#d4edda{% endif %}
+                            {% if message.tags == '' or message.tags == 'info' %}#cce5ff{% endif %};
+
+                        border-left: 4px solid
+                            {% if message.tags == 'error' %}#721c24{% endif %}
+                            {% if message.tags == 'success' %}#155724{% endif %}
+                            {% if message.tags == '' or message.tags == 'info' %}#004085{% endif %};
+
+                        color: {% if message.tags == 'error' %}black{% else %}#000{% endif %};
+                    "
+                >
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
     <!-- Main Page Container -->
     <main class="dashboard-container">
         {% block content %}
