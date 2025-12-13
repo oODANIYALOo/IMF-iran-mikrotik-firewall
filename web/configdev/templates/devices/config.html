@@ -1,32 +1,68 @@
 {% extends 'parent/base.html' %}
-
 {% block title %}Mikrotik Configuration{% endblock %}
 
 {% block content %}
-<h2>Mikrotik Configuration</h2>
+
+<h2 class="mb-4">Mikrotik Configuration</h2>
 
 <form method="POST">
     {% csrf_token %}
 
-    <!-- Hostname -->
-    <label>Hostname:</label>
-    <input type="text" name="hostname">
+    <!-- HOSTNAME -->
+    <div>
+        <label>Hostname:</label>
+        <input type="text" name="hostname" placeholder="router1">
+    </div>
+    <hr>
 
-    <!-- VLAN ID -->
-    <label>VLAN ID:</label>
-    <input type="text" name="vlan">
+    <!-- VLAN -->
+    <div>
+        <label>
+            <input type="checkbox" name="vlan_chk"> Enable VLAN
+        </label>
+        <br>
+        <input type="text" name="vlan" placeholder="VLAN ID (optional)">
+        <small>If you write a value → sent as --vlan-id X<br>
+        If checkbox only → sent as --vlan</small>
+    </div>
+    <hr>
 
-    <!-- DHCP Server Name -->
-    <label>DHCP Server Name:</label>
-    <input type="text" name="dhcp_server">
+    <!-- DHCP -->
+    <div>
+        <label>
+            <input type="checkbox" name="dhcp_chk"> Enable DHCP Server
+        </label>
+        <br>
+        <input type="text" name="dhcp_pool" placeholder="DHCP Pool (optional)">
+        <small>If you write pool → sent as --dhcp-pool X<br>
+        If checkbox only → sent as --dhcp-server</small>
+    </div>
+    <hr>
 
-    <!-- NTP Server -->
-    <label>NTP Server:</label>
-    <input type="text" name="ntp_server">
+    <!-- NTP -->
+    <div>
+        <label>
+            <input type="checkbox" name="ntp_chk"> Enable NTP
+        </label>
+        <br>
+        <input type="text" name="ntp_server" placeholder="NTP Server (optional)">
+        <small>Value → --ntp-server X | checkbox only → --set-ntp</small>
+    </div>
+    <hr>
 
-    <!-- Default Route -->
-    <label>Default Route:</label>
-    <input type="text" name="default_route">
+    <!-- ROUTE -->
+    <div>
+        <label>
+            <input type="checkbox" name="route_chk"> Enable Static Route
+        </label>
+        <br>
+        <input type="text" name="route_gw" placeholder="Gateway (optional)">
+        <small>Value → --route-gateway X<br>
+        Checkbox only → --add-route</small>
+    </div>
+    <hr>
+
     <button type="submit">Apply Configuration</button>
 </form>
+
 {% endblock %}

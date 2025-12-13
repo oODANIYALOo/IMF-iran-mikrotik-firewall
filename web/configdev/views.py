@@ -96,36 +96,76 @@ class ConfigMikrotick(View):
         return render(request, "devices/config.html")
 
     def post(self, request):
-        hostname = request.POST.get("hostname", "").strip()
-        vlan = request.POST.get("vlan", "").strip()
-        dhcp_server = request.POST.get("dhcp_server", "").strip()
-        ntp = request.POST.get("ntp_server", "").strip()
-        default_route = request.POST.get("default_route", "").strip()
-
         args = []
 
+        # ---------------------------------------------------------
+        # HOSTNAME (only added if user enters a value)
+        # ---------------------------------------------------------
+        hostname = request.POST.get("hostname", "").strip()
         if hostname:
             args.append(f"--hostname {hostname}")
-        if vlan:
-            args.append(f"--vlan {vlan}")
-        if dhcp_server:
-            args.append(f"--dhcp-server {dhcp_server}")
-        if ntp:
-            args.append(f"--ntp {ntp}")
-        if default_route:
-            args.append(f"--route {default_route}")
 
+        # ---------------------------------------------------------
+        # VLAN logic:
+        # 1. If user typed a value → use "--vlan-id <value>"
+        # 2. Else if checkbox is checked → use "--vlan"
+        # 3. Otherwise → nothing
+        # ---------------------------------------------------------
+        vlan_chk = request.POST.get("vlan_chk")
+        vlan_value = request.POST.get("vlan", "").strip()
+
+        if vlan_value:
+            args.append(f"--vlan-id {vlan_value}")
+        elif vlan_chk:
+            args.append("--vlan")
+
+        # ---------------------------------------------------------
+        # DHCP logic:
+        # 1. If user typed a pool → "--dhcp-pool <value>"
+        # 2. If only checkbox checked → "--dhcp-server"
+        # ---------------------------------------------------------
+        dhcp_chk = request.POST.get("dhcp_chk")
+        dhcp_pool = request.POST.get("dhcp_pool", "").strip()
+
+        if dhcp_pool:
+            args.append(f"--dhcp-pool {dhcp_pool}")
+        elif dhcp_chk:
+            args.append("--dhcp-server")
+
+        # ---------------------------------------------------------
+        # NTP logic:
+        # 1. Value → "--ntp-server <value>"
+        # 2. Only checkbox → "--set-ntp"
+        # ---------------------------------------------------------
+        ntp_chk = request.POST.get("ntp_chk")
+        ntp_server = request.POST.get("ntp_server", "").strip()
+
+        if ntp_server:
+            args.append(f"--ntp-server {ntp_server}")
+        elif ntp_chk:
+            args.append("--set-ntp")
+
+        # ---------------------------------------------------------
+        # STATIC ROUTE logic:
+        # 1. Value → "--route-gateway <gw>"
+        # 2. Only checkbox → "--add-route"
+        # ---------------------------------------------------------
+        route_chk = request.POST.get("route_chk")
+        route_gw = request.POST.get("route_gw", "").strip()
+
+        if route_gw:
+            args.append(f"--route-gateway {route_gw}")
+        elif route_chk:
+            args.append("--add-route")
+
+        # ---------------------------------------------------------
+        # Build final command argument string
+        # ---------------------------------------------------------
         argument_string = " ".join(args)
 
-        if not argument_string:
-            messages.error(request, "Please enter at least one field.")
-            return render(request, "devices/config.html")
-
-        # Run IMF commands
+        # Send to IMF
         self.run_imf(request, argument_string)
-        # execute anis
         self.execute(request)
 
         messages.success(request, "Configuration applied successfully.")
-
         return render(request, "devices/config.html")
