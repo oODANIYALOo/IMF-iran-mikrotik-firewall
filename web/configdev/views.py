@@ -301,7 +301,8 @@ class MikrotickCustomconfigView(View):
 
         # EXECUTE
         elif action == "execute":
-            # Placeholder for execution logic (SSH / API / subprocess)
+            self.run_imf(request, selected_file)
+            self.execute(request)
             messages.success(request, f"{selected_file} executed successfully.")
 
         else:
