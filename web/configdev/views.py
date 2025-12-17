@@ -10,7 +10,7 @@ IMF_CONFIG = "imf-config"
 IMF_INVENTORY = "imf-inventory"
 ANSI_MIKROTICK_INVENTORY= "inventory.ini"
 ANSI_MIKROTICK_CONFIG = "mikrotik-config.yml"
-CUSTOM_CONFIG_DIR = os.path.join(settings.BASE_DIR, "custom_configs")
+CUSTOM_CONFIG_DIR = os.path.join(settings.BASE_DIR, "../web_custom_configs")
 class IndexView(View):
     def get(self, request):
         return render(request, "index.html")
@@ -189,6 +189,26 @@ class MikrotickCustomconfigView(View):
                 "files": files,
             }
         )
+    def execute(self, request):
+        try:
+            cmd = f"ansible-playbook -i {ANSI_MIKROTICK_INVENTORY} {ANSI_MIKROTICK_CONFIG}"
+            result = subprocess.run(
+                cmd, shell=True, capture_output=True, text=True
+            )
+            return result.stdout
+        except subprocess.CalledProcessError as e:
+            messages.error(request, e.stderr or str(e))
+            return ""
+
+    def run_imf(self, request, FIlE):
+        try:
+            result = subprocess.run(
+                f"imf-config --header --file-config {CUSTOM_CONFIG_DIR}/{FIlE}", shell=True, capture_output=True, text=True
+            )
+            return result.stdout
+        except subprocess.CalledProcessError as e:
+            messages.error(request, e.stderr or str(e))
+            return ""
 
     def post(self, request):
         action = request.POST.get("action")
