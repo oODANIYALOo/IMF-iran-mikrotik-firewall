@@ -1,0 +1,102 @@
+{% extends "parent/base.html" %}
+
+{% block content %}
+
+<h1>MikroTik Custom Configuration</h1>
+
+{% if messages %}
+    {% for message in messages %}
+        <p>{{ message }}</p>
+    {% endfor %}
+{% endif %}
+
+<hr>
+
+<!-- ===================== -->
+<!-- CREATE NEW FILE -->
+<!-- ===================== -->
+<h3>Create New File</h3>
+
+<form method="post">
+    {% csrf_token %}
+
+    <p>
+        <label>New filename:</label><br>
+        <input type="text" name="new_filename" placeholder="example.rsc" required>
+    </p>
+
+    <p>
+        <label>Content:</label><br>
+        <textarea name="content" rows="10" cols="80"></textarea>
+    </p>
+
+    <button type="submit" name="action" value="add">Create</button>
+</form>
+
+<hr>
+
+<!-- ===================== -->
+<!-- EXISTING FILES -->
+<!-- ===================== -->
+<h3>Edit / Execute / Delete Existing File</h3>
+
+<form method="post" id="edit-form">
+    {% csrf_token %}
+
+    <!-- hidden load action -->
+    <input type="hidden" name="action" id="action-input" value="load">
+
+    <p>
+        <label>Select file:</label><br>
+        <select name="selected_file" id="file-select" required>
+            <option value="">-- choose file --</option>
+            {% for file in files %}
+                <option value="{{ file }}"
+                    {% if file == selected_file %}selected{% endif %}>
+                    {{ file }}
+                </option>
+            {% endfor %}
+        </select>
+    </p>
+
+    <!-- EDITOR -->
+    <div id="editor-box"
+         style="display:{% if selected_file %}block{% else %}none{% endif %};">
+
+        <p>
+            <label>File content:</label><br>
+            <textarea name="updated_content" rows="15" cols="80">{{ file_content|default_if_none:"" }}</textarea>
+        </p>
+
+        <p>
+            <button type="submit" onclick="setAction('edit')">Update</button>
+            <button type="submit" onclick="setAction('execute')">Execute</button>
+            <button type="submit" onclick="setAction('delete')"
+                    onclick="return confirm('Delete selected file?');">
+                Delete
+            </button>
+        </p>
+    </div>
+</form>
+
+<script>
+    const fileSelect = document.getElementById('file-select');
+    const form = document.getElementById('edit-form');
+    const actionInput = document.getElementById('action-input');
+    const editorBox = document.getElementById('editor-box');
+
+    function setAction(action) {
+        actionInput.value = action;
+    }
+
+    fileSelect.addEventListener('change', function () {
+        if (this.value !== "") {
+            actionInput.value = "load";
+            form.submit();
+        } else {
+            editorBox.style.display = 'none';
+        }
+    });
+</script>
+
+{% endblock %}

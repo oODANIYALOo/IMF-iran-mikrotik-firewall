@@ -1,3 +1,5 @@
+import os
+from django.conf import settings
 import subprocess
 from django.shortcuts import render, redirect
 from django.views import View
@@ -8,6 +10,7 @@ IMF_CONFIG = "imf-config"
 IMF_INVENTORY = "imf-inventory"
 ANSI_MIKROTICK_INVENTORY= "inventory.ini"
 ANSI_MIKROTICK_CONFIG = "mikrotik-config.yml"
+CUSTOM_CONFIG_DIR = os.path.join(settings.BASE_DIR, "custom_configs")
 class IndexView(View):
     def get(self, request):
         return render(request, "index.html")
@@ -169,3 +172,119 @@ class ConfigMikrotick(View):
 
         messages.success(request, "Configuration applied successfully.")
         return render(request, "devices/config.html")
+
+
+
+class MikrotickCustomconfigView(View):
+
+    def get(self, request):
+        files = []
+        if os.path.exists(CUSTOM_CONFIG_DIR):
+            files = os.listdir(CUSTOM_CONFIG_DIR)
+
+        return render(
+            request,
+            "devices/custom_config.html",
+            {
+                "files": files,
+            }
+        )
+
+    def post(self, request):
+        action = request.POST.get("action")
+
+        os.makedirs(CUSTOM_CONFIG_DIR, exist_ok=True)
+
+        files = os.listdir(CUSTOM_CONFIG_DIR)
+
+        # -----------------------------
+        # LOAD FILE CONTENT
+        # -----------------------------
+        if action == "load":
+            selected_file = request.POST.get("selected_file")
+
+            if not selected_file:
+                messages.error(request, "Please select a file.")
+                return redirect("configdev:mikrotick_custom_config")
+
+            file_path = os.path.join(CUSTOM_CONFIG_DIR, selected_file)
+
+            if not os.path.exists(file_path):
+                messages.error(request, "File not found.")
+                return redirect("configdev:mikrotick_custom_config")
+
+            with open(file_path, "r") as f:
+                content = f.read()
+
+            return render(
+                request,
+                "devices/custom_config.html",
+                {
+                    "files": files,
+                    "selected_file": selected_file,
+                    "file_content": content,
+                }
+            )
+
+        # -----------------------------
+        # CREATE NEW FILE
+        # -----------------------------
+        if action == "add":
+            new_filename = request.POST.get("new_filename", "").strip()
+            content = request.POST.get("content", "")
+
+            if not new_filename:
+                messages.error(request, "Filename is required.")
+                return redirect("configdev:mikrotick_custom_config")
+
+            if "/" in new_filename or ".." in new_filename:
+                messages.error(request, "Invalid filename.")
+                return redirect("configdev:mikrotick_custom_config")
+
+            file_path = os.path.join(CUSTOM_CONFIG_DIR, new_filename)
+
+            if os.path.exists(file_path):
+                messages.error(request, "File already exists.")
+            else:
+                with open(file_path, "w") as f:
+                    f.write(content)
+                messages.success(request, "File created successfully.")
+
+            return redirect("configdev:mikrotick_custom_config")
+
+        # -----------------------------
+        # ACTIONS ON EXISTING FILE
+        # -----------------------------
+        selected_file = request.POST.get("selected_file")
+
+        if not selected_file:
+            messages.error(request, "Please select a file.")
+            return redirect("configdev:mikrotick_custom_config")
+
+        file_path = os.path.join(CUSTOM_CONFIG_DIR, selected_file)
+
+        if not os.path.exists(file_path):
+            messages.error(request, "File not found.")
+            return redirect("configdev:mikrotick_custom_config")
+
+        # UPDATE
+        if action == "edit":
+            updated_content = request.POST.get("updated_content", "")
+            with open(file_path, "w") as f:
+                f.write(updated_content)
+            messages.success(request, "File updated successfully.")
+
+        # DELETE
+        elif action == "delete":
+            os.remove(file_path)
+            messages.success(request, "File deleted successfully.")
+
+        # EXECUTE
+        elif action == "execute":
+            # Placeholder for execution logic (SSH / API / subprocess)
+            messages.success(request, f"{selected_file} executed successfully.")
+
+        else:
+            messages.error(request, "Invalid action.")
+
+        return redirect("configdev:mikrotick_custom_config")

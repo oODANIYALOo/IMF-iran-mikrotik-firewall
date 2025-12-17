@@ -5,13 +5,22 @@
 
 <h2 class="mb-4">Mikrotik Configuration</h2>
 
+<!-- Custom Config Link -->
+<p>
+    <a href="{% url 'configdev:mikrotick_custom_config' %}" class="btn-primary">
+        Go to Custom Configuration Files
+    </a>
+</p>
+
+<hr>
+
 <form method="POST">
     {% csrf_token %}
 
     <!-- HOSTNAME -->
     <div>
         <label>Hostname:</label>
-        <input type="text" name="hostname" placeholder="router1">
+        <input type="text" name="hostname" placeholder="router1" class="form-input">
     </div>
     <hr>
 
@@ -21,9 +30,11 @@
             <input type="checkbox" name="vlan_chk"> Enable VLAN
         </label>
         <br>
-        <input type="text" name="vlan" placeholder="VLAN ID (optional)">
-        <small>If you write a value → sent as --vlan-id X<br>
-        If checkbox only → sent as --vlan</small>
+        <input type="text" name="vlan" placeholder="VLAN ID (optional)" class="form-input">
+        <small>
+            If you write a value → sent as --vlan-id X<br>
+            If checkbox only → sent as --vlan
+        </small>
     </div>
     <hr>
 
@@ -33,9 +44,11 @@
             <input type="checkbox" name="dhcp_chk"> Enable DHCP Server
         </label>
         <br>
-        <input type="text" name="dhcp_pool" placeholder="DHCP Pool (optional)">
-        <small>If you write pool → sent as --dhcp-pool X<br>
-        If checkbox only → sent as --dhcp-server</small>
+        <input type="text" name="dhcp_pool" placeholder="DHCP Pool (optional)" class="form-input">
+        <small>
+            If you write pool → sent as --dhcp-pool X<br>
+            If checkbox only → sent as --dhcp-server
+        </small>
     </div>
     <hr>
 
@@ -45,8 +58,10 @@
             <input type="checkbox" name="ntp_chk"> Enable NTP
         </label>
         <br>
-        <input type="text" name="ntp_server" placeholder="NTP Server (optional)">
-        <small>Value → --ntp-server X | checkbox only → --set-ntp</small>
+        <input type="text" name="ntp_server" placeholder="NTP Server (optional)" class="form-input">
+        <small>
+            Value → --ntp-server X | checkbox only → --set-ntp
+        </small>
     </div>
     <hr>
 
@@ -56,13 +71,15 @@
             <input type="checkbox" name="route_chk"> Enable Static Route
         </label>
         <br>
-        <input type="text" name="route_gw" placeholder="Gateway (optional)">
-        <small>Value → --route-gateway X<br>
-        Checkbox only → --add-route</small>
+        <input type="text" name="route_gw" placeholder="Gateway (optional)" class="form-input">
+        <small>
+            Value → --route-gateway X<br>
+            Checkbox only → --add-route
+        </small>
     </div>
     <hr>
 
-    <button type="submit">Apply Configuration</button>
+    <button type="submit" class="btn-primary">Apply Configuration</button>
 </form>
 
 {% endblock %}
