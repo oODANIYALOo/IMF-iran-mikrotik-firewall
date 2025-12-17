@@ -99,16 +99,43 @@ CONFIG() {
 for OP in $ANSWER; do
   case "$OP" in
 	SET-HOSTNAME)
-		TMP=$(dialog --title "enter your device hostname" --inputbox "IMF" 4 40 3>&1 1>&2 2>&3)
+		TMP=$(dialog --title "enter your device hostname" --inputbox "IMF" 8 40 3>&1 1>&2 2>&3)
 		CONFIG_CMD="$CONFIG_CMD --hostname $TMP";;
-  VLAN)
-	CONFIG_CMD="$CONFIG_CMD --vlan";;
-  DHCP-SERVER)
-	CONFIG_CMD="$CONFIG_CMD --dhcp-server";;
-  FIREWALL)
-	CONFIG_CMD="$CONFIG_CMD --firewall";;
-  SET-NTP)
-	CONFIG_CMD="$CONFIG_CMD --set-ntp";;
+	VLAN)
+		CONFIG_CMD="$CONFIG_CMD --vlan"
+		TMP=$(dialog --form "Enter your vlan option " 10 50 4 \
+			"Vlan ID: " 1 1 "1" 1 12 20 0 \
+			"Interface: " 2 1 "ether1" 2 12 20 0 3>&1 1>&2 2>&3)
+		TMP1=$(echo -n $TMP | cut -d " " -f1)
+		TMP2=$(echo -n $TMP | cut -d " " -f2)
+		if [ $TMP1 != "" ] ; then
+			CONFIG_CMD="$CONFIG_CMD --vlan-id $TMP1 "
+		fi
+		if [ $TMP2 != "" ] ; then
+			CONFIG_CMD="$CONFIG_CMD --vlan-interface $TMP2 "
+		fi
+		;;
+
+	DHCP-SERVER)
+		CONFIG_CMD="$CONFIG_CMD --dhcp-server"
+		TMP=$(dialog --form "Enter your dhcp option " 10 50 4 \
+			"Pool: " 1 1 "192.168.1.100-192.168.1.200" 1 12 20 0 \
+			"network: " 2 1 "192.168.1.0/24" 2 12 20 0 3>&1 1>&2 2>&3)
+		TMP1=$(echo -n $TMP | cut -d " " -f1)
+		TMP2=$(echo -n $TMP | cut -d " " -f2)
+		if [ $TMP1 != "" ] ; then
+			CONFIG_CMD="$CONFIG_CMD --dhcp-pool $TMP1 "
+		fi
+		if [ $TMP2 != "" ] ; then
+			CONFIG_CMD="$CONFIG_CMD --dhcp-network $TMP2 "
+		fi
+		;;
+
+  	FIREWALL)
+		CONFIG_CMD="$CONFIG_CMD --firewall";;
+	SET-NTP)
+		TMP=$(dialog --title "enter your ntp server" --inputbox "NTP" 4 40 3>&1 1>&2 2>&3)
+		CONFIG_CMD="$CONFIG_CMD --ntp-server $TMP";;
   SIMPLE-HARDEN)
 	CONFIG_CMD="$CONFIG_CMD --harden";;
   ADD-ROUTE)
@@ -120,12 +147,15 @@ for OP in $ANSWER; do
 
 done
 
-	imf-config $CONFIG_CMD 
-	if $? ;then
-		ansible-playbook -i inventory.ini mikrotik-config.yml
-	else
-		dialog --msgbox "IMF-CONFIG ERROR" 3 30
-	fi
+if STDOUT=$(imf-config $CONFIG_CMD); then
+	dialog --title "enter your device number" --inputbox "all" 8 40 2>/dev/null
+    ansible-playbook -i inventory.ini mikrotik-config.yml
+    dialog --msgbox "config successful :)" 3 30
+else
+    EXIT_CODE=$?
+    dialog --title "create config status" --msgbox "$STDOUT" 3 30
+    dialog --msgbox "IMF-CONFIG ERROR (Exit code: $EXIT_CODE)" 3 30
+fi
 }
 
 WEB() {
