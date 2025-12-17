@@ -10,7 +10,8 @@ Usage: $SCRIPT_NAME [options]
 
 Main options:
   --header		    (important) for create header file - use for create yaml file
-  --hostname name           Set hostname (required)
+  --file-config FILE	    adding file configuration
+  --hostname NAME           Set hostname (required)
   --dhcp-server             Add DHCP Server
   --vlan                    Add VLAN configuration
   --firewall                Add Simple Firewall
@@ -36,6 +37,7 @@ General options:
   --help                    Show this help message
 
 Examples:
+  $SCRIPT_NAME --header --file-config FILE
   $SCRIPT_NAME --hostname NAME 
   $SCRIPT_NAME --hostname router1 --dhcp-server --dhcp-pool "192.168.10.50-192.168.10.150"
   $SCRIPT_NAME --hostname router1 --vlan --vlan-id 20 --vlan-interface ether2
@@ -45,6 +47,8 @@ EOF
 
 declare -A CONFIG=(
     [HEADER]="false"
+    [FILECONFIG]="false"
+    [FILE_CONFIG]=""
     [HOSTNAME]="false"
     [HOST_NAME]=""
     [DHCP_SERVER]="false"
@@ -80,6 +84,16 @@ playbook_header() {
     
   tasks:
 EOF
+}
+
+file_config() {
+    cat >> "${CONFIG[OUTPUT_FILE]}" << EOF
+    - name: User config file
+      community.routeros.command:
+        commands:
+EOF
+sed -i 's/^/          - /' "${CONFIG[FILE_CONFIG]}"
+cat "${CONFIG[FILE_CONFIG]}" >> "${CONFIG[OUTPUT_FILE]}"
 }
 
 hostname_task() {
@@ -197,6 +211,11 @@ create_yaml() {
 		playbook_header
 		log_message "create header and yaml file task added"
 	fi
+	
+	if [ "${CONFIG[FILECONFIG]}" = "true" ]; then
+		file_config
+		log_message "User file config task added"
+	fi
 
 	if [ "${CONFIG[HOSTNAME]}" = "true" ]; then
 		hostname_task
@@ -258,6 +277,11 @@ arguments() {
             --header)
                 CONFIG[HEADER]="true"
                 shift
+                ;;
+            --file-config)
+                CONFIG[FILECONFIG]="true"
+                CONFIG[FILE_CONFIG]="$2"
+                shift 2
                 ;;
             --hostname)
                 CONFIG[HOSTNAME]="true"
