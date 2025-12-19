@@ -19,92 +19,76 @@
 
     <!-- HOSTNAME -->
     <div>
-        <label>Hostname:</label>
+        <label>Hostname</label>
         <input type="text" name="hostname" placeholder="router1" class="form-input">
     </div>
     <hr>
 
     <!-- VLAN -->
     <div>
+        <p>VLAN Configuration</p>
         <label>
-            <input type="checkbox" name="vlan_chk"> Enable VLAN
+            <input type="checkbox" name="vlan_chk">
+            Enable VLAN
         </label>
-        <br>
         <input type="text" name="vlan" placeholder="VLAN ID (optional)" class="form-input">
-        <small>
-            Value → <code>--vlan-id X</code><br>
-            Checkbox only → <code>--vlan</code>
-        </small>
     </div>
     <hr>
 
     <!-- DHCP -->
     <div>
+        <p>DHCP Server Configuration</p>
         <label>
-            <input type="checkbox" name="dhcp_chk"> Enable DHCP Server
+            <input type="checkbox" name="dhcp_chk">
+            Enable DHCP Server
         </label>
-        <br>
         <input type="text" name="dhcp_pool" placeholder="DHCP Pool (optional)" class="form-input">
-        <small>
-            Value → <code>--dhcp-pool X</code><br>
-            Checkbox only → <code>--dhcp-server</code>
-        </small>
     </div>
     <hr>
 
     <!-- NTP -->
     <div>
+        <p>NTP Configuration</p>
         <label>
-            <input type="checkbox" name="ntp_chk"> Enable NTP
+            <input type="checkbox" name="ntp_chk">
+            Enable NTP
         </label>
-        <br>
         <input type="text" name="ntp_server" placeholder="NTP Server (optional)" class="form-input">
-        <small>
-            Value → <code>--ntp-server X</code><br>
-            Checkbox only → <code>--set-ntp</code>
-        </small>
     </div>
     <hr>
 
     <!-- STATIC ROUTE -->
     <div>
+        <p>Static Route Configuration</p>
         <label>
-            <input type="checkbox" name="route_chk"> Enable Static Route
+            <input type="checkbox" name="route_chk">
+            Enable Static Route
         </label>
-        <br>
         <input type="text" name="route_gw" placeholder="Gateway (optional)" class="form-input">
-        <small>
-            Value → <code>--route-gateway X</code><br>
-            Checkbox only → <code>--add-route</code>
-        </small>
     </div>
     <hr>
 
     <!-- HARDEN -->
     <div>
+        <p>Basic Security Hardening</p>
         <label>
-            <input type="checkbox" name="harden_chk"> Apply Basic Hardening
+            <input type="checkbox" name="harden_chk">
         </label>
-        <br>
-        <small>
-            Checkbox → <code>--harden</code>
-        </small>
     </div>
     <hr>
 
     <!-- FIREWALL -->
     <div>
+        <p>Firewall Rules</p>
         <label>
-            <input type="checkbox" name="firewall_chk"> Apply Simple Firewall Rules
+            <input type="checkbox" name="firewall_chk">
         </label>
-        <br>
-        <small>
-            Checkbox → <code>--firewall</code>
-        </small>
     </div>
     <hr>
 
-    <button type="submit" class="btn-primary">Apply Configuration</button>
+    <button type="submit" class="btn-primary">
+        Apply Configuration
+    </button>
 </form>
 
 {% endblock %}
