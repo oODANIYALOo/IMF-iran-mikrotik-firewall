@@ -41,7 +41,15 @@ def run_command(request, cmd):
         return None
 
     return result.stdout
-
+def mikrotik_devices_exist(request):
+    """
+    Check if at least one mikrotik device exists.
+    """
+    result = run_command(
+        request,
+        f"{IMF_INVENTORY} show | grep mikrotik"
+    )
+    return bool(result)
 
 # =========================
 # INDEX
@@ -122,6 +130,10 @@ class ConfigMikrotick(View):
         return render(request, "devices/config.html")
 
     def post(self, request):
+        if not mikrotik_devices_exist(request):
+            messages.error(request, "No mikrotik devices found.")
+            return redirect("configdev:config_mikrotick")
+
         args = []
 
         # HOSTNAME
@@ -204,6 +216,10 @@ class MikrotickCustomconfigView(View):
         return render(request, "devices/custom_config.html", {"files": files})
 
     def post(self, request):
+        if not mikrotik_devices_exist(request):
+            messages.error(request, "No mikrotik devices found.")
+            return redirect("configdev:mikrotick_custom_config")
+
         action = request.POST.get("action")
         os.makedirs(CUSTOM_CONFIG_DIR, exist_ok=True)
         files = os.listdir(CUSTOM_CONFIG_DIR)
