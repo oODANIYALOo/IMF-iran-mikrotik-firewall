@@ -160,7 +160,14 @@ class ConfigMikrotick(View):
             args.append(f"--route-gateway {route_gw}")
         elif route_chk:
             args.append("--add-route")
-
+        harden_chk=request.POST.get("harden_chk")
+        # Add Simple Firewall
+        if harden_chk:
+            args.append(f"--harden")
+        # Add Simple Harden
+        firewall_chk = request.POST.get("firewall_chk")
+        if firewall_chk:
+            args.append(f"--firewall")
         argument_string = " ".join(args)
 
         # Run IMF

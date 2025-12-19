@@ -32,8 +32,8 @@
         <br>
         <input type="text" name="vlan" placeholder="VLAN ID (optional)" class="form-input">
         <small>
-            If you write a value → sent as --vlan-id X<br>
-            If checkbox only → sent as --vlan
+            Value → <code>--vlan-id X</code><br>
+            Checkbox only → <code>--vlan</code>
         </small>
     </div>
     <hr>
@@ -46,8 +46,8 @@
         <br>
         <input type="text" name="dhcp_pool" placeholder="DHCP Pool (optional)" class="form-input">
         <small>
-            If you write pool → sent as --dhcp-pool X<br>
-            If checkbox only → sent as --dhcp-server
+            Value → <code>--dhcp-pool X</code><br>
+            Checkbox only → <code>--dhcp-server</code>
         </small>
     </div>
     <hr>
@@ -60,12 +60,13 @@
         <br>
         <input type="text" name="ntp_server" placeholder="NTP Server (optional)" class="form-input">
         <small>
-            Value → --ntp-server X | checkbox only → --set-ntp
+            Value → <code>--ntp-server X</code><br>
+            Checkbox only → <code>--set-ntp</code>
         </small>
     </div>
     <hr>
 
-    <!-- ROUTE -->
+    <!-- STATIC ROUTE -->
     <div>
         <label>
             <input type="checkbox" name="route_chk"> Enable Static Route
@@ -73,8 +74,32 @@
         <br>
         <input type="text" name="route_gw" placeholder="Gateway (optional)" class="form-input">
         <small>
-            Value → --route-gateway X<br>
-            Checkbox only → --add-route
+            Value → <code>--route-gateway X</code><br>
+            Checkbox only → <code>--add-route</code>
+        </small>
+    </div>
+    <hr>
+
+    <!-- HARDEN -->
+    <div>
+        <label>
+            <input type="checkbox" name="harden_chk"> Apply Basic Hardening
+        </label>
+        <br>
+        <small>
+            Checkbox → <code>--harden</code>
+        </small>
+    </div>
+    <hr>
+
+    <!-- FIREWALL -->
+    <div>
+        <label>
+            <input type="checkbox" name="firewall_chk"> Apply Simple Firewall Rules
+        </label>
+        <br>
+        <small>
+            Checkbox → <code>--firewall</code>
         </small>
     </div>
     <hr>
