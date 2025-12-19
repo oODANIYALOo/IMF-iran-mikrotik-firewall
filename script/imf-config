@@ -92,8 +92,10 @@ file_config() {
       community.routeros.command:
         commands:
 EOF
-sed -i 's/^/          - /' "${CONFIG[FILE_CONFIG]}"
-cat "${CONFIG[FILE_CONFIG]}" >> "${CONFIG[OUTPUT_FILE]}"
+cp "${CONFIG[FILE_CONFIG]}" config.tmp 
+sed -i 's/^/          - /' config.tmp
+cat config.tmp >> "${CONFIG[OUTPUT_FILE]}"
+rm config.tmp
 }
 
 hostname_task() {
