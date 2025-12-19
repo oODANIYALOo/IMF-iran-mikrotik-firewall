@@ -231,7 +231,14 @@ class MikrotickCustomconfigView(View):
             filename = request.POST.get("new_filename", "").strip()
             content = request.POST.get("content", "")
 
-            if not filename or "/" in filename or ".." in filename:
+            if (
+                    not filename
+                    or "/" in filename
+                    or ".." in filename
+                    or " " in filename
+                    or not filename.isalnum()
+            ):
+                # invalid filename
                 messages.error(request, "Invalid filename.")
                 return redirect("configdev:mikrotick_custom_config")
 
