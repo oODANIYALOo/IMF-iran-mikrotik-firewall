@@ -1,12 +1,20 @@
 {% extends 'parent/base.html' %}
-
 {% block title %}MikroTik Check Result{% endblock %}
 
 {% block content %}
 <h1>MikroTik Device Check</h1>
 
+{% if selected_devices %}
+    <h3>Selected Devices</h3>
+    <ul>
+        {% for d in selected_devices %}
+            <li>{{ d }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
 {% if output %}
-    <h3>Command Output:</h3>
+    <h3>Command Output</h3>
     <pre>{{ output }}</pre>
 {% else %}
     <p>No data received.</p>

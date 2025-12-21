@@ -1,0 +1,42 @@
+{% extends 'parent/base.html' %}
+{% block title %}Device Manager{% endblock %}
+
+{% block content %}
+<div class="status-card animate-slide-in">
+
+    <h2 class="dashboard-title">Device List</h2>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <table>
+            <tr>
+                <th>#</th>
+                <th>Device Entry</th>
+                <th>Select</th>
+            </tr>
+
+            {% for line in devices %}
+                {% if line and "No hosts found" not in line and "Usage:" not in line %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ line }}</td>
+                    <td>
+                        <input type="checkbox"
+                               name="devices"
+                               value="{{ line }}">
+                    </td>
+                </tr>
+                {% endif %}
+            {% empty %}
+                <tr><td colspan="3">No devices found.</td></tr>
+            {% endfor %}
+        </table>
+
+        <button class="btn-primary" type="submit">
+            Check
+        </button>
+    </form>
+
+</div>
+{% endblock %}

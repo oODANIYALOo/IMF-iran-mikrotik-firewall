@@ -1,94 +1,104 @@
 {% extends 'parent/base.html' %}
-{% block title %}Mikrotik Configuration{% endblock %}
+
+{% block title %}MikroTik Device Configuration{% endblock %}
 
 {% block content %}
+<div class="status-card animate-slide-in">
 
-<h2 class="mb-4">Mikrotik Configuration</h2>
+    <h2 class="dashboard-title">Select Devices</h2>
 
-<!-- Custom Config Link -->
-<p>
-    <a href="{% url 'configdev:mikrotick_custom_config' %}" class="btn-primary">
-        Go to Custom Configuration Files
-    </a>
-</p>
-
-<hr>
-
-<form method="POST">
-    {% csrf_token %}
-
-    <!-- HOSTNAME -->
-    <div>
-        <label>Hostname</label>
-        <input type="text" name="hostname" placeholder="router1" class="form-input">
+    <!-- Link to Custom Config -->
+    <div style="margin-bottom: 15px;">
+        <a href="{% url 'configdev:mikrotick_custom_config' %}" class="btn-secondary">
+            Go to Custom Config
+        </a>
     </div>
-    <hr>
 
-    <!-- VLAN -->
-    <div>
-        <p>VLAN Configuration</p>
-        <label>
-            <input type="checkbox" name="vlan_chk">
-            Enable VLAN
-        </label>
-        <input type="text" name="vlan" placeholder="VLAN ID (optional)" class="form-input">
-    </div>
-    <hr>
+    <form method="post">
+        {% csrf_token %}
 
-    <!-- DHCP -->
-    <div>
-        <p>DHCP Server Configuration</p>
-        <label>
-            <input type="checkbox" name="dhcp_chk">
-            Enable DHCP Server
-        </label>
-        <input type="text" name="dhcp_pool" placeholder="DHCP Pool (optional)" class="form-input">
-    </div>
-    <hr>
+        <!-- Device List Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Device Entry</th>
+                    <th>Select</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for line in devices %}
+                    {% if line and "No hosts found" not in line and "Usage:" not in line %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ line }}</td>
+                        <td>
+                            <input type="checkbox" name="devices" value="{{ line }}">
+                        </td>
+                    </tr>
+                    {% endif %}
+                {% empty %}
+                    <tr>
+                        <td colspan="3">No devices found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
-    <!-- NTP -->
-    <div>
-        <p>NTP Configuration</p>
-        <label>
-            <input type="checkbox" name="ntp_chk">
-            Enable NTP
-        </label>
-        <input type="text" name="ntp_server" placeholder="NTP Server (optional)" class="form-input">
-    </div>
-    <hr>
+        <hr>
 
-    <!-- STATIC ROUTE -->
-    <div>
-        <p>Static Route Configuration</p>
-        <label>
-            <input type="checkbox" name="route_chk">
-            Enable Static Route
-        </label>
-        <input type="text" name="route_gw" placeholder="Gateway (optional)" class="form-input">
-    </div>
-    <hr>
+        <!-- Configuration Options -->
+        <h3>Configuration</h3>
 
-    <!-- HARDEN -->
-    <div>
-        <p>Basic Security Hardening</p>
-        <label>
-            <input type="checkbox" name="harden_chk">
-        </label>
-    </div>
-    <hr>
+        <div class="form-group">
+            <label>Hostname</label>
+            <input type="text" name="hostname" placeholder="Enter hostname">
+        </div>
 
-    <!-- FIREWALL -->
-    <div>
-        <p>Firewall Rules</p>
-        <label>
-            <input type="checkbox" name="firewall_chk">
-        </label>
-    </div>
-    <hr>
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="vlan_chk"> Enable VLAN
+            </label>
+            <input type="text" name="vlan" placeholder="VLAN ID">
+        </div>
 
-    <button type="submit" class="btn-primary">
-        Apply Configuration
-    </button>
-</form>
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="dhcp_chk"> Enable DHCP
+            </label>
+            <input type="text" name="dhcp_pool" placeholder="DHCP Pool">
+        </div>
 
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="ntp_chk"> Enable NTP
+            </label>
+            <input type="text" name="ntp_server" placeholder="NTP Server">
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="route_chk"> Add Route
+            </label>
+            <input type="text" name="route_gw" placeholder="Gateway">
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="harden_chk"> Harden
+            </label>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="firewall_chk"> Firewall
+            </label>
+        </div>
+
+        <!-- Submit Button -->
+        <button class="btn-primary" type="submit">
+            Apply Config
+        </button>
+    </form>
+</div>
 {% endblock %}

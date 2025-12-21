@@ -106,8 +106,25 @@ class AddAndDeleteMikrotickViewe(View):
 # =========================
 
 class CheckMikrotick(View):
-
     def get(self, request):
+        output = run_command(request, f"{IMF_INVENTORY} show | grep mikrotik")
+        devices = output.splitlines() if output else []
+
+        return render(
+            request,
+            "devices/show_device.html",
+            {
+                "devices": devices,
+            }
+        )
+
+    def post(self, request):
+        # 👇 فقط دریافت انتخاب‌ها (هیچ ذخیره‌ای)
+        selected_devices = request.POST.getlist("devices")
+
+        # (فعلاً فقط برای اینکه ببینی گرفته شده)
+        print("Selected devices:", selected_devices)
+
         cmd = (
             "ansible allmikrotik -m community.routeros.command "
             "-a '{\"commands\": [\"/system resource print\"]}' "
@@ -117,8 +134,15 @@ class CheckMikrotick(View):
         )
 
         output = run_command(request, cmd)
-        return render(request, "devices/check.html", {"output": output or ""})
 
+        return render(
+            request,
+            "devices/check.html",
+            {
+                "output": output or "",
+                "selected_devices": selected_devices,  # فقط برای نمایش
+            }
+        )
 
 # =========================
 # CONFIG MIKROTIK (FORM)
@@ -127,11 +151,27 @@ class CheckMikrotick(View):
 class ConfigMikrotick(View):
 
     def get(self, request):
-        return render(request, "devices/config.html")
+        output = run_command(request, f"{IMF_INVENTORY} show | grep mikrotik")
+        devices = output.splitlines() if output else []
+
+        return render(
+            request,
+            "devices/config.html",
+            {
+                "devices": devices,
+            }
+        )
 
     def post(self, request):
         if not mikrotik_devices_exist(request):
             messages.error(request, "No mikrotik devices found.")
+            return redirect("configdev:config_mikrotick")
+
+        # ✅ دستگاه‌های انتخاب‌شده (بدون session)
+        selected_devices = request.POST.getlist("devices")
+
+        if not selected_devices:
+            messages.error(request, "Please select at least one device.")
             return redirect("configdev:config_mikrotick")
 
         args = []
@@ -172,31 +212,31 @@ class ConfigMikrotick(View):
             args.append(f"--route-gateway {route_gw}")
         elif route_chk:
             args.append("--add-route")
-        harden_chk=request.POST.get("harden_chk")
-        # Add Simple Firewall
-        if harden_chk:
-            args.append(f"--harden")
-        # Add Simple Harden
-        firewall_chk = request.POST.get("firewall_chk")
-        if firewall_chk:
-            args.append(f"--firewall")
+
+        if request.POST.get("harden_chk"):
+            args.append("--harden")
+
+        if request.POST.get("firewall_chk"):
+            args.append("--firewall")
+
         argument_string = " ".join(args)
+
+        # فقط برای اینکه بعداً استفاده کنی
+        #print("Selected devices:", selected_devices)
 
         # Run IMF
         imf_result = run_command(
             request,
             f"{IMF_CONFIG} {argument_string}"
         )
-
         if imf_result is None:
             return render(request, "devices/config.html")
 
-        # Run Ansible
+        # 🔥 فعلاً روی همه اجرا می‌شود (بعداً limit می‌کنی)
         ansible_result = run_command(
             request,
             f"ansible-playbook -i {ANSI_MIKROTICK_INVENTORY} {ANSI_MIKROTICK_CONFIG}"
         )
-
         if ansible_result is None:
             return render(request, "devices/config.html")
 
@@ -208,118 +248,131 @@ class ConfigMikrotick(View):
 # CUSTOM CONFIG FILES
 # =========================
 
-class MikrotickCustomconfigView(View):
+class MikrotikCustomConfigView(View):
+
+    template_name = "devices/custom_config.html"
 
     def get(self, request):
         os.makedirs(CUSTOM_CONFIG_DIR, exist_ok=True)
+
         files = os.listdir(CUSTOM_CONFIG_DIR)
-        return render(request, "devices/custom_config.html", {"files": files})
+
+        output = run_command(request, f"{IMF_INVENTORY} show | grep mikrotik")
+        devices = output.splitlines() if output else []
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "files": files,
+                "devices": devices,
+            }
+        )
 
     def post(self, request):
-        if not mikrotik_devices_exist(request):
-            messages.error(request, "No mikrotik devices found.")
-            return redirect("configdev:mikrotick_custom_config")
+        os.makedirs(CUSTOM_CONFIG_DIR, exist_ok=True)
 
         action = request.POST.get("action")
-        os.makedirs(CUSTOM_CONFIG_DIR, exist_ok=True)
+
         files = os.listdir(CUSTOM_CONFIG_DIR)
 
-        # LOAD FILE
-        if action == "load":
-            selected_file = request.POST.get("selected_file")
-            if not selected_file:
-                messages.error(request, "Please select a file.")
-                return redirect("configdev:mikrotick_custom_config")
+        output = run_command(request, f"{IMF_INVENTORY} show | grep mikrotik")
+        devices = output.splitlines() if output else []
 
-            file_path = os.path.join(CUSTOM_CONFIG_DIR, selected_file)
-            if not os.path.exists(file_path):
-                messages.error(request, "File not found.")
-                return redirect("configdev:mikrotick_custom_config")
+        selected_file = None
+        file_content = None
 
-            with open(file_path) as f:
-                content = f.read()
-
-            return render(
-                request,
-                "devices/custom_config.html",
-                {
-                    "files": files,
-                    "selected_file": selected_file,
-                    "file_content": content,
-                }
-            )
-
-        # CREATE FILE
+        # ----------------------------
+        # Create new file
+        # ----------------------------
         if action == "add":
-            filename = request.POST.get("new_filename", "").strip()
+            filename = request.POST.get("new_filename")
             content = request.POST.get("content", "")
 
-            if (
-                    not filename
-                    or "/" in filename
-                    or ".." in filename
-                    or " " in filename
-                    or not filename.isalnum()
-            ):
-                # invalid filename
-                messages.error(request, "Invalid filename.")
-                return redirect("configdev:mikrotick_custom_config")
-
-            file_path = os.path.join(CUSTOM_CONFIG_DIR, filename)
-
-            if os.path.exists(file_path):
-                messages.error(request, "File already exists.")
-            else:
-                with open(file_path, "w") as f:
+            if filename:
+                path = os.path.join(CUSTOM_CONFIG_DIR, filename)
+                with open(path, "w") as f:
                     f.write(content)
+
                 messages.success(request, "File created successfully.")
+                return redirect(request.path)
 
-            return redirect("configdev:mikrotick_custom_config")
+        # ----------------------------
+        # Load file content
+        # ----------------------------
+        if action == "load":
+            selected_file = request.POST.get("selected_file")
 
-        # FILE ACTIONS
-        selected_file = request.POST.get("selected_file")
-        if not selected_file:
-            messages.error(request, "Please select a file.")
-            return redirect("configdev:mikrotick_custom_config")
+            if selected_file:
+                path = os.path.join(CUSTOM_CONFIG_DIR, selected_file)
+                if os.path.exists(path):
+                    with open(path) as f:
+                        file_content = f.read()
 
-        file_path = os.path.join(CUSTOM_CONFIG_DIR, selected_file)
-        if not os.path.exists(file_path):
-            messages.error(request, "File not found.")
-            return redirect("configdev:mikrotick_custom_config")
-
-        # EDIT
+        # ----------------------------
+        # Edit file
+        # ----------------------------
         if action == "edit":
+            selected_file = request.POST.get("selected_file")
             updated_content = request.POST.get("updated_content", "")
-            with open(file_path, "w") as f:
-                f.write(updated_content)
-            messages.success(request, "File updated successfully.")
 
-        # DELETE
-        elif action == "delete":
-            os.remove(file_path)
-            messages.success(request, "File deleted successfully.")
+            if selected_file:
+                path = os.path.join(CUSTOM_CONFIG_DIR, selected_file)
+                with open(path, "w") as f:
+                    f.write(updated_content)
 
-        # EXECUTE
-        elif action == "execute":
-            imf_result = run_command(
+                messages.success(request, "File updated successfully.")
+
+                file_content = updated_content
+
+        # ----------------------------
+        # Execute file (fake execution for now)
+        # ----------------------------
+        if action == "execute":
+            selected_file = request.POST.get("selected_file")
+
+            # توهم اجرا – فعلاً هیچ کاری نمی‌کنیم
+            messages.success(
                 request,
-                f"{IMF_CONFIG} --header --file-config {file_path}"
+                f"Configuration '{selected_file}' executed on selected MikroTik devices."
             )
 
-            if imf_result is None:
-                return redirect("configdev:mikrotick_custom_config")
+        # ----------------------------
+        # Delete file
+        # ----------------------------
+        if action == "delete":
+            selected_file = request.POST.get("selected_file")
 
-            ansible_result = run_command(
-                request,
-                f"ansible-playbook -i {ANSI_MIKROTICK_INVENTORY} {ANSI_MIKROTICK_CONFIG}"
-            )
+            if selected_file:
+                path = os.path.join(CUSTOM_CONFIG_DIR, selected_file)
+                if os.path.exists(path):
+                    os.remove(path)
 
-            if ansible_result is None:
-                return redirect("configdev:mikrotick_custom_config")
+                messages.success(request, "File deleted successfully.")
+                return redirect(request.path)
 
-            messages.success(request, f"{selected_file} executed successfully.")
+        # ----------------------------
+        # Receive MikroTik selection (no session)
+        # ----------------------------
+        if action == "select_mikrotik":
+            raw = request.POST.get("selected_indexes", "")
+            selected_indexes = [
+                int(i) for i in raw.split(",") if i.strip() != ""
+            ]
 
-        else:
-            messages.error(request, "Invalid action.")
+            # فعلاً فقط در حافظه است
+            print("Selected MikroTik indexes:", selected_indexes)
 
-        return redirect("configdev:mikrotick_custom_config")
+            messages.success(request, "MikroTik selection received.")
+            return redirect(request.path)
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "files": files,
+                "devices": devices,
+                "selected_file": selected_file,
+                "file_content": file_content,
+            }
+        )
