@@ -376,3 +376,19 @@ class MikrotikCustomConfigView(View):
                 "file_content": file_content,
             }
         )
+
+class LogsView(View):
+    def get(self, request):
+        log_file = ".imf-config.log"
+        logs = ""
+        if os.path.exists(log_file):
+            with open(log_file, "r") as f:
+                logs = f.read()
+        else:
+            logs = "No logs found."
+
+        return render(
+            request,
+            "logs.html",
+            {"logs": logs}
+        )

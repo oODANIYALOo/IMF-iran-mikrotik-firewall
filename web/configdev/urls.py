@@ -1,5 +1,5 @@
 from django.urls import path
-from configdev.views import AddAndDeleteMikrotickViewe,ConfigMikrotick,CheckMikrotick,IndexView,MikrotikCustomConfigView
+from configdev.views import AddAndDeleteMikrotickViewe,ConfigMikrotick,CheckMikrotick,IndexView,MikrotikCustomConfigView,LogsView
 
 app_name = "configdev"
 urlpatterns = [
@@ -8,6 +8,6 @@ urlpatterns = [
     path("conifig_mikrotick/", ConfigMikrotick.as_view(), name="config_mikrotick"),
     path("check/", CheckMikrotick.as_view(), name="check"),
     path("mikrotick_custom_config/", MikrotikCustomConfigView.as_view(), name="mikrotick_custom_config"),
-
+    path("logs/", LogsView.as_view(), name="logs"),
 
 ]
