@@ -90,11 +90,10 @@ CONFIG() {
 	ANSWER=$(dialog --checklist "checklist" 20 35 18 \
 		"SET-HOSTNAME" 1 "off" \
 		"VLAN" 2 "off" \
-#		"DHCP-SERVER" 3 "off" \
-		"FIREWALL" 4 "off" \
-		"SET-NTP" 5 "off" \
-		"SIMPLE-HARDEN" 6 "off" \
-		"L2TP-SERVER" 7 "off" 3>&1 1>&2 2>&3 || exit 1)
+		"FIREWALL" 3 "off" \
+		"SET-NTP" 4 "off" \
+		"SIMPLE-HARDEN" 5 "off" \
+		"L2TP-SERVER" 6 "off" 3>&1 1>&2 2>&3 || exit 1)
 
 for OP in $ANSWER; do
   case "$OP" in
@@ -118,9 +117,9 @@ for OP in $ANSWER; do
 
 	DHCP-SERVER)
 		CONFIG_CMD="$CONFIG_CMD --dhcp-server"
-		TMP=$(dialog --form "Enter your dhcp option " 10 50 4 \
-			"Pool: " 1 1 "192.168.1.100-192.168.1.200" 1 12 20 0 \
-			"network: " 2 1 "192.168.1.0/24" 2 12 20 0 3>&1 1>&2 2>&3)
+		TMP=$(dialog --form "Enter your dhcp option " 10 70 4 \
+			"Pool: " 1 1 "192.168.1.100-192.168.1.200" 1 12 30 0 \
+			"network: " 2 1 "192.168.1.0/24" 2 12 30 0 3>&1 1>&2 2>&3)
 		TMP1=$(echo -n $TMP | cut -d " " -f1)
 		TMP2=$(echo -n $TMP | cut -d " " -f2)
 		if [ $TMP1 != "" ] ; then
@@ -141,7 +140,19 @@ for OP in $ANSWER; do
 	ADD-ROUTE)
 		CONFIG_CMD="$CONFIG_CMD --add-route";;
   	L2TP-SERVER)
-		CONFIG_CMD="$CONFIG_CMD --l2tp-server";;
+		CONFIG_CMD="$CONFIG_CMD --l2tp-server";
+		TMP=$(dialog --form "Enter your l2tp server option " 10 70 4 \
+			"USER: " 1 1 "admin" 1 12 30 0 \
+			"PASSWORD: " 2 1 "passwordpd" 2 12 30 0 3>&1 1>&2 2>&3)
+		TMP1=$(echo -n $TMP | cut -d " " -f1)
+		TMP2=$(echo -n $TMP | cut -d " " -f2)
+		if [ $TMP1 != "" ] ; then
+			CONFIG_CMD="$CONFIG_CMD $TMP1 "
+		fi
+		if [ $TMP2 != "" ] ; then
+			CONFIG_CMD="$CONFIG_CMD $TMP2 "
+		fi
+		;;
   *)
     echo error case: wrong input $OP
     ;;

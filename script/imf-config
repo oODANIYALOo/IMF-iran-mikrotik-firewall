@@ -317,6 +317,11 @@ create_yaml() {
         log_message "NTP task added"
     fi
 
+    if [ "${CONFIG[L2TP_SERVER]}" = "true" ]; then
+	l2tp_server_task
+        log_message "L2TP server task added"
+    fi
+
     log_message "Configuration file created at ${CONFIG[OUTPUT_FILE]}"
     return 0
 }
@@ -393,6 +398,12 @@ arguments() {
             --output-file)
                 CONFIG[OUTPUT_FILE]="$2"
                 shift 2
+                ;;
+            --l2tp-server)
+                CONFIG[L2TP_SERVER]="true"
+                CONFIG[L2TP_USER]="$2"
+                CONFIG[L2TP_PASS]="$3"
+                shift 3
                 ;;
             --help)
                 show_help
