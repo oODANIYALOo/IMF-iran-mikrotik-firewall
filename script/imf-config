@@ -109,7 +109,7 @@ EOF
 }
 
 dhcp_server_task() {
-    cat >> "$TASKS_FILE" << EOF
+    cat >> "${CONFIG[OUTPUT_FILE]}" << EOF
     - name: Configure DHCP Server
       community.routeros.command:
         commands:
@@ -121,7 +121,7 @@ EOF
 }
 
 vlan_task() {
-    cat >> "$TASKS_FILE" << EOF
+    cat >> "${CONFIG[OUTPUT_FILE]}" << EOF
     - name: Configure VLAN ${CONFIG[VLAN_ID]} on ${CONFIG[VLAN_INTERFACE]}
       community.routeros.command:
         commands:
@@ -132,27 +132,26 @@ EOF
 }
 
 firewall_task() {
-    cat >> "$TASKS_FILE" << EOF
+    cat >> "${CONFIG[OUTPUT_FILE]}" << EOF
     - name: Configure Simple Firewall Rules
       community.routeros.command:
         commands:
-          - /ip firewall filter
-          - add chain=input action=accept protocol=tcp dst-port=22 comment="Allow SSH"
-          - add chain=input action=accept protocol=icmp comment="Allow ICMP"
-          - add chain=input action=accept protocol=udp dst-port=53 comment="Allow DNS"
-          - add chain=input action=accept protocol=udp dst-port=67-68 comment="Allow DHCP"
-          - add chain=input action=drop in-interface=!lan comment="Drop everything else not from LAN"
-          - add chain=forward action=fasttrack-connection connection-state=established,related comment="FastTrack"
-          - add chain=forward action=accept connection-state=established,related
-          - add chain=forward action=drop connection-state=invalid
-          - add chain=forward action=drop connection-state=new connection-nat-state=!dstnat in-interface=wan
-          - add chain=forward action=accept out-interface=wan comment="Allow outgoing traffic"
+          - /ip firewall filter add chain=input action=accept protocol=tcp dst-port=22 comment="Allow SSH"
+          - /ip firewall filter add chain=input action=accept protocol=icmp comment="Allow ICMP"
+          - /ip firewall filter add chain=input action=accept protocol=udp dst-port=53 comment="Allow DNS"
+          - /ip firewall filter add chain=input action=accept protocol=udp dst-port=67-68 comment="Allow DHCP"
+          - /ip firewall filter add chain=input action=drop in-interface=!lan comment="Drop non-LAN traffic"
+          - /ip firewall filter add chain=forward action=fasttrack-connection connection-state=established,related comment="FastTrack"
+          - /ip firewall filter add chain=forward action=accept connection-state=established,related
+          - /ip firewall filter add chain=forward action=drop connection-state=invalid
+          - /ip firewall filter add chain=forward action=drop connection-state=new connection-nat-state=!dstnat in-interface=wan
+          - /ip firewall filter add chain=forward action=accept connection-state=new connection-nat-state=dstnat in-interface=wan comment="Allow established and related"
 
 EOF
 }
 
 harden_task() {
-    cat >> "$TASKS_FILE" << EOF
+    cat >> "${CONFIG[OUTPUT_FILE]}" << EOF
     - name: Configure System Hardening
       community.routeros.command:
         commands:
@@ -161,8 +160,6 @@ harden_task() {
           - /ip service disable www
           - /ip service set api disabled=yes
           - /ip service set api-ssl disabled=yes
-          - /ip service set winbox address=192.168.88.0/24
-          - /user set admin password="\$(cat /dev/urandom | tr -dc 'A-Za-z0-9!@#$%^&*()' | head -c 16)"
           - /system logging action set memory memory-lines=500
           - /system logging add topics=firewall,info action=memory
           - /ip socks set enabled=no
@@ -173,7 +170,7 @@ EOF
 }
 
 add_route_task() {
-    cat >> "$TASKS_FILE" << EOF
+    cat >> "${CONFIG[OUTPUT_FILE]}" << EOF
     - name: Add Static Route to ${CONFIG[ROUTE_DEST]}
       community.routeros.command:
         commands:
@@ -183,7 +180,7 @@ EOF
 }
 
 set_ntp_task() {
-    cat >> "$TASKS_FILE" << EOF
+    cat >> "${CONFIG[OUTPUT_FILE]}" << EOF
     - name: Configure NTP Client
       community.routeros.command:
         commands:
@@ -225,8 +222,8 @@ create_yaml() {
 	fi
 
 	if [ "${CONFIG[DHCP_SERVER]}" = "true" ]; then
-        if validate_ip "${CONFIG[DHCP_POOL]}" && validate_ip "${CONFIG[DHCP_NETWORK]}"; then
-            create_dhcp_server_task
+        if validate_ip "${CONFIG[DHCP_NETWORK]}"; then
+            dhcp_server_task
             log_message "DHCP Server task added"
         else
             log_message "Error: Invalid DHCP IP address"
@@ -236,7 +233,7 @@ create_yaml() {
 
     if [ "${CONFIG[VLAN]}" = "true" ]; then
         if [[ "${CONFIG[VLAN_ID]}" =~ ^[0-9]+$ ]] && [ "${CONFIG[VLAN_ID]}" -ge 1 ] && [ "${CONFIG[VLAN_ID]}" -le 4094 ]; then
-            create_vlan_task
+            vlan_task
             log_message "VLAN task added"
         else
             log_message "Error: Invalid VLAN ID (must be between 1 and 4094)"
@@ -245,18 +242,18 @@ create_yaml() {
     fi
 
     if [ "${CONFIG[FIREWALL]}" = "true" ]; then
-        create_firewall_task
+        firewall_task
         log_message "Firewall task added"
     fi
 
     if [ "${CONFIG[HARDEN]}" = "true" ]; then
-        create_harden_task
+        harden_task
         log_message "Hardening task added"
     fi
 
     if [ "${CONFIG[ADD_ROUTE]}" = "true" ]; then
         if validate_ip "${CONFIG[ROUTE_DEST]}" && validate_ip "${CONFIG[ROUTE_GATEWAY]}"; then
-            create_add_route_task
+            add_route_task
             log_message "Static Route task added"
         else
             log_message "Error: Invalid Route address"
@@ -265,7 +262,7 @@ create_yaml() {
     fi
 
     if [ "${CONFIG[SET_NTP]}" = "true" ]; then
-        create_set_ntp_task
+        set_ntp_task
         log_message "NTP task added"
     fi
 

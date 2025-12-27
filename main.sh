@@ -94,7 +94,7 @@ CONFIG() {
 		"FIREWALL" 4 "off" \
 		"SET-NTP" 5 "off" \
 		"SIMPLE-HARDEN" 6 "off" \
-		"ADD-ROUTE" 7 "off" 3>&1 1>&2 2>&3)
+		"ADD-ROUTE" 7 "off" 3>&1 1>&2 2>&3 || exit 1)
 
 for OP in $ANSWER; do
   case "$OP" in
@@ -134,7 +134,7 @@ for OP in $ANSWER; do
   	FIREWALL)
 		CONFIG_CMD="$CONFIG_CMD --firewall";;
 	SET-NTP)
-		TMP=$(dialog --title "enter your ntp server" --inputbox "NTP" 4 40 3>&1 1>&2 2>&3)
+		TMP=$(dialog --title "enter your ntp server" --inputbox "NTP" 8 40 3>&1 1>&2 2>&3)
 		CONFIG_CMD="$CONFIG_CMD --ntp-server $TMP";;
   SIMPLE-HARDEN)
 	CONFIG_CMD="$CONFIG_CMD --harden";;
@@ -149,12 +149,12 @@ done
 
 if STDOUT=$(imf-config $CONFIG_CMD); then
 	dialog --title "enter your device number" --inputbox "all" 8 40 2>/dev/null
-    ansible-playbook -i inventory.ini mikrotik-config.yml
-    dialog --msgbox "config successful :)" 3 30
+	ansible-playbook -i inventory.ini mikrotik-config.yml 1>/dev/null 2>&1
+	dialog --title "status of config" --msgbox "config successful :)" 5 40
 else
     EXIT_CODE=$?
-    dialog --title "create config status" --msgbox "$STDOUT" 3 30
-    dialog --msgbox "IMF-CONFIG ERROR (Exit code: $EXIT_CODE)" 3 30
+    dialog --title "create config status" --msgbox "$STDOUT" 6 40
+    dialog --msgbox "IMF-CONFIG ERROR (Exit code: $EXIT_CODE)" 6 40
 fi
 }
 
