@@ -90,11 +90,11 @@ CONFIG() {
 	ANSWER=$(dialog --checklist "checklist" 20 35 18 \
 		"SET-HOSTNAME" 1 "off" \
 		"VLAN" 2 "off" \
-		"DHCP-SERVER" 3 "off" \
+#		"DHCP-SERVER" 3 "off" \
 		"FIREWALL" 4 "off" \
 		"SET-NTP" 5 "off" \
 		"SIMPLE-HARDEN" 6 "off" \
-		"ADD-ROUTE" 7 "off" 3>&1 1>&2 2>&3 || exit 1)
+		"L2TP-SERVER" 7 "off" 3>&1 1>&2 2>&3 || exit 1)
 
 for OP in $ANSWER; do
   case "$OP" in
@@ -136,10 +136,12 @@ for OP in $ANSWER; do
 	SET-NTP)
 		TMP=$(dialog --title "enter your ntp server" --inputbox "NTP" 8 40 3>&1 1>&2 2>&3)
 		CONFIG_CMD="$CONFIG_CMD --ntp-server $TMP";;
-  SIMPLE-HARDEN)
-	CONFIG_CMD="$CONFIG_CMD --harden";;
-  ADD-ROUTE)
-	CONFIG_CMD="$CONFIG_CMD --add-route";;
+	SIMPLE-HARDEN)
+		CONFIG_CMD="$CONFIG_CMD --harden";;
+	ADD-ROUTE)
+		CONFIG_CMD="$CONFIG_CMD --add-route";;
+  	L2TP-SERVER)
+		CONFIG_CMD="$CONFIG_CMD --l2tp-server";;
   *)
     echo error case: wrong input $OP
     ;;

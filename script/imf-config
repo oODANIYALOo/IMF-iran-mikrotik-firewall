@@ -18,6 +18,7 @@ Main options:
   --harden                  Add Simple Harden
   --add-route               Add Static Route
   --set-ntp                 Set NTP Server
+  --l2tp-server user pass   setup l2tp server with ipsec (default: user=admin pass=passwordpd)
 
 Advanced options:
   dhcp-server
@@ -64,6 +65,9 @@ declare -A CONFIG=(
     [ROUTE_GATEWAY]="192.168.1.254"
     [SET_NTP]="false"
     [NTP_SERVER]="pool.ntp.org"
+    [L2TP_SERVER]="false"
+    [L2TP_USER]="admin"
+    [L2TP_PASS]="passwordpd"
     [OUTPUT_FILE]="mikrotik-config.yml"
     [IMF_CONFIG_LOG]=".imf-config.log"
 )
@@ -188,6 +192,53 @@ set_ntp_task() {
           - /system clock set time-zone-name=Asia/Tehran
 
 EOF
+}
+
+l2tp_server_task() {
+    cat >> "${CONFIG[OUTPUT_FILE]}" << EOF
+  vars:
+    ansible_network_os: community.routeros.routeros
+    l2tp_secret: "YourStrongSecretKey123"
+    ipsec_secret: "YourIPSecPreSharedKey456"
+    vpn_username: "vpnuser"
+    vpn_password: "UserPassword123"
+
+  tasks:
+    - name: Create PPP profile for L2TP
+      community.routeros.command:
+        commands:
+          - /ip pool add name=l2tp-pool ranges=192.168.100.100-192.168.100.200
+          - /ppp profile add name=l2tp-profile local-address=192.168.100.1 remote-address=l2tp-pool use-encryption=yes dns-server=8.8.8.8,8.8.4.4
+
+    - name: Enable L2TP server
+      community.routeros.command:
+        commands:
+          - /interface l2tp-server server set enabled=yes default-profile=l2tp-profile authentication=mschap2,mschap1 max-mtu=1460 max-mru=1460 keepalive-timeout=30
+          - /ip ipsec proposal add name=l2tp-proposal auth-algorithms=sha256 enc-algorithms=aes-256-cbc,aes-128-cbc pfs-group=modp1024 lifetime=1h
+          - /ip ipsec peer add address=0.0.0.0/0 exchange-mode=ike1 secret="YourIPSecPreSharedKey456" passive=yes send-initial-contact=no
+          - /ip ipsec policy add src-address=0.0.0.0/0 dst-address=0.0.0.0/0 protocol=udp src-port=1701 dst-port=1701 sa-src-address=0.0.0.0 sa-dst-address=0.0.0.0 proposal=l2tp-proposal tunnel=yes
+          - /ppp secret add name="${CONFIG[L2TP_USER]}" password="${CONFIG[L2TP_PASS]}" profile=l2tp-profile service=l2tp
+          - /ip firewall filter add chain=input action=accept protocol=udp dst-port=1701 comment="Allow L2TP"
+          - /ip firewall filter add chain=input action=accept protocol=udp dst-port=500 comment="Allow IKE"
+          - /ip firewall filter add chain=input action=accept protocol=udp dst-port=4500 comment="Allow IPsec NAT-T"
+          - /ip firewall filter add chain=input action=accept protocol=esp comment="Allow ESP"
+          - /ip firewall filter add chain=input action=accept protocol=ah comment="Allow AH"
+          - /ip firewall filter add chain=forward action=accept src-address=192.168.100.0/24 comment="Allow L2TP clients traffic"
+
+    - name: Add NAT rule for L2TP clients
+      community.routeros.command:
+        commands:
+          - /ip firewall nat add chain=srcnat src-address=192.168.100.0/24 out-interface=wan action=masquerade comment="NAT for L2TP clients"
+
+    - name: Configure additional L2TP security settings
+      community.routeros.command:
+        commands:
+          - /interface l2tp-server server set use-ipsec=required
+          - /interface l2tp-server server set allow-fast-path=no
+          - /interface l2tp-server server set mrru=1600
+
+EOF
+	
 }
 
 log_message() {
